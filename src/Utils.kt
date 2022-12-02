@@ -2,11 +2,11 @@ import java.io.File
 import java.math.BigInteger
 import java.security.MessageDigest
 
-/**
- * Reads lines from the given input txt file.
- */
-fun readInput(name: String) = File("src", "$name.txt")
-    .readLines()
+fun readFile(year: Int, day: Int, test: Int? = null): File {
+    fun Int.twoDigit() = String.format("%02d", this)
+    val testSuffix = if (test != null) "_test${test.twoDigit()}" else ""
+    return File("input/$year/Day${day.twoDigit()}$testSuffix.txt")
+}
 
 /**
  * Converts string to md5 hash.
