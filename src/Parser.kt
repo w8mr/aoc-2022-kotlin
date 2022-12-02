@@ -15,10 +15,22 @@ class Context(val source: CharSequence, var index: Int = 0) {
 }
 class Regex(private val pattern: String): Parser<String>() {
     override fun apply(context: Context): Boolean {
-        val result = "^$pattern".toRegex().find(context.source, context.index)
+        if (context.index > context.source.length) return false
+        val result = "^$pattern".toRegex().find(context.source.subSequence(context.index, context.source.length))
         when(result) {
             null -> return context.error()
             else -> return context.token(result.value, result.value.length)
+        }
+    }
+}
+
+class Literal(private val literal: String): Parser<String>() {
+    override fun apply(context: Context): Boolean {
+        if (context.index > context.source.length) return false
+        val result = context.source.subSequence(context.index, context.source.length).startsWith(literal)
+        return when(result) {
+            true -> context.token(literal, literal.length)
+            false -> context.error()
         }
     }
 }
@@ -90,8 +102,9 @@ class Seq<R1, R2, T>(private val p1: Parser<R1>, private val p2: Parser<R2>, pri
 
 
 fun number() = Map(Regex("\\d+")) { it.toInt() }
-fun newLine() = Regex("\\r\\n")
+fun newLine() = Literal("\n")
 
+fun <R> endNL(parser: Parser<R>): Parser<R> = Seq(parser, newLine()) { value, _ -> value }
 
 abstract class Parser<R> {
     sealed interface Result<R>
