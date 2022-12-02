@@ -11,8 +11,8 @@ fun main() {
         return sumCaloriesByElf(input).sorted().reversed().take(3).sum()
     }
 
-    val calories = endNL(number())
-    val elf = endNL(ZeroOrMore(calories))
+    val calories = endNLorEoF(number())
+    val elf = endNLorEoF(ZeroOrMore(calories))
     val elfs = ZeroOrMore(elf)
 
     // test if implementation meets criteria from the description, like:
