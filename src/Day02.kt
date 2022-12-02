@@ -11,24 +11,6 @@ enum class Result {
 }
 
 fun main() {
-    val col1Map = mapOf(
-        Pair("A", Item.ROCK),
-        Pair("B", Item.PAPER),
-        Pair("C", Item.SCISSOR)
-    )
-
-    val col2Map = mapOf(
-        Pair("X", Item.ROCK),
-        Pair("Y", Item.PAPER),
-        Pair("Z", Item.SCISSOR)
-    )
-
-    val col2_part2Map = mapOf(
-        Pair("X", Result.LOSE),
-        Pair("Y", Result.DRAW),
-        Pair("Z", Result.WIN)
-    )
-
     val score = mapOf(
         Pair(Pair(Item.ROCK, Item.ROCK), 3 + 1),
         Pair(Pair(Item.ROCK, Item.PAPER), 6 + 2),
@@ -53,36 +35,43 @@ fun main() {
         Pair(Pair(Item.SCISSOR, Result.WIN), Item.ROCK),
     )
 
-
-    fun scores(input: String): Int {
-        val (c1, c2) = input.split(' ')
-        val i1 = col1Map[c1]
-        val i2 = col2Map[c2]
-        return score[Pair(i1, i2)] ?: 0
+    fun scores2(input: Pair<Item, Result>): Int {
+        val i2 = needToWinMap[Pair(input.first, input.second)]
+        return score[Pair(input.first, i2)] ?: 0
     }
 
-    fun scores2(input: String): Int {
-        val (c1, c2) = input.split(' ')
-        val i1 = col1Map[c1]
-        val r2 = col2_part2Map[c2]
-        val i2 = needToWinMap[Pair(i1,r2)]
-        return score[Pair(i1, i2)] ?: 0
+    fun part1(input: List<Pair<Item, Item>>): Int {
+        return input.map { score[it] ?: 0 }.sum()
     }
 
-    fun part1(input: List<String>): Int {
-        return input.map(::scores).sum()
-    }
-
-    fun part2(input: List<String>): Int {
+    fun part2(input: List<Pair<Item, Result>>): Int {
         return input.map(::scores2).sum()
     }
 
-    // test if implementation meets criteria from the description, like:
-    val testInput = readFile(2022, 2, 1).readLines()
-    check(part1(testInput) == 15)
-    check(part2(testInput) == 12)
+    val col1 = OneOf(
+        Map(Literal("A")) { Item.ROCK },
+        Map(Literal("B")) { Item.PAPER },
+        Map(Literal("C")) { Item.SCISSOR })
+    val col2_part1 = OneOf(
+        Map(Literal("X")) { Item.ROCK },
+        Map(Literal("Y")) { Item.PAPER },
+        Map(Literal("Z")) { Item.SCISSOR })
 
-    val input = readFile(2022, 2).readLines()
-    println(part1(input))
-    println(part2(input))
+    val col2_part2 = OneOf(
+        Map(Literal("X")) { Result.LOSE },
+        Map(Literal("Y")) { Result.DRAW },
+        Map(Literal("Z")) { Result.WIN })
+
+    val parser1 = ZeroOrMore(Seq4(col1, Literal(" "), col2_part1, Literal("\n")) { c1, _, c2, _ -> Pair(c1,c2) } )
+    val parser2 = ZeroOrMore(Seq4(col1, Literal(" "), col2_part2, Literal("\n")) { c1, _, c2, _ -> Pair(c1,c2) } )
+    // test if implementation meets criteria from the description, like:
+    val testInput1 = parser1.parse(readFile(2022, 2, 1).readText())
+    val testInput2 = parser2.parse(readFile(2022, 2, 1).readText())
+    check(part1(testInput1) == 15)
+    check(part2(testInput2) == 12)
+
+    val input1 = parser1.parse(readFile(2022, 2).readText())
+    println(part1(input1))
+    val input2 = parser2.parse(readFile(2022, 2).readText())
+    println(part2(input2))
 }

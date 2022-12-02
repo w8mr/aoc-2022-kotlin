@@ -78,19 +78,67 @@ class ZeroOrMore<R>(private val parser: Parser<R>): Parser<List<R>>() {
 class Seq<R1, R2, T>(private val p1: Parser<R1>, private val p2: Parser<R2>, private val map: (v1: R1, v2: R2) -> T): Parser<T>() {
     override fun apply(context: Context): Result<T> =
         when (val r1 = p1.apply(context)) {
-            is Success -> {
+            is Success ->
                 when (val r2 = p2.apply(context)) {
                     is Success -> context.success(map(r1.value, r2.value), 0)
                     is Error -> context.error("Sequence second parser failed")
                 }
-            }
             is Error -> context.error("Sequence first parser failed")
         }
 }
 
+class Seq3<R1, R2, R3, T>(private val p1: Parser<R1>, private val p2: Parser<R2>, private val p3: Parser<R3>, private val map: (v1: R1, v2: R2, v3: R3) -> T): Parser<T>() {
+    override fun apply(context: Context): Result<T> =
+        when (val r1 = p1.apply(context)) {
+            is Success ->
+                when (val r2 = p2.apply(context)) {
+                    is Success ->
+                        when (val r3 = p3.apply(context)) {
+                            is Success -> context.success(map(r1.value, r2.value, r3.value), 0)
+                            is Error -> context.error("Sequence third parser failed")
+                        }
+                    is Error -> context.error("Sequence second parser failed")
+                }
+            is Error -> context.error("Sequence first parser failed")
+        }
+}
+
+class Seq4<R1, R2, R3, R4, T>(private val p1: Parser<R1>, private val p2: Parser<R2>, private val p3: Parser<R3>, private val p4: Parser<R4>, private val map: (v1: R1, v2: R2, v3: R3, v4: R4) -> T): Parser<T>() {
+    override fun apply(context: Context): Result<T> =
+        when (val r1 = p1.apply(context)) {
+            is Success ->
+                when (val r2 = p2.apply(context)) {
+                    is Success ->
+                        when (val r3 = p3.apply(context)) {
+                            is Success ->
+                                when (val r4 = p4.apply(context)) {
+                                    is Success -> context.success(map(r1.value, r2.value, r3.value, r4.value), 0)
+                                    is Error -> context.error("Sequence forth parser failed")
+                                }
+                            is Error -> context.error("Sequence third parser failed")
+                        }
+                    is Error -> context.error("Sequence second parser failed")
+                }
+            is Error -> context.error("Sequence first parser failed")
+        }
+}
+
+
 sealed interface OrResult<out L, out R> {
     data class Left<L>(val left: L) : OrResult<L, Nothing>
     data class Right<R>(val right: R) : OrResult<Nothing, R>
+}
+
+class OneOf<R>(private vararg val parsers: Parser<R>): Parser<R>() {
+    override fun apply(context: Context): Result<R> {
+        for (parser in parsers) {
+            when (val result = parser.apply(context)) {
+                is Success -> return context.success(result.value, 0)
+                else -> {}
+            }
+        }
+        return context.error("OneOf has no match")
+    }
 }
 
 class Or<L,R>(private val p1: Parser<L>, private val p2: Parser<R>): Parser<OrResult<L,R>>() {
