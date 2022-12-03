@@ -1,3 +1,5 @@
+package aoc
+
 import java.io.File
 import java.math.BigInteger
 import java.security.MessageDigest
@@ -10,7 +12,7 @@ fun readFile(year: Int, day: Int, test: Int? = null): File {
 }
 
 /**
- * Converts string to md5 hash.
+ * Converts string to aoc.md5 hash.
  */
 fun String.md5() = BigInteger(1, MessageDigest.getInstance("MD5").digest(toByteArray()))
     .toString(16)
@@ -21,7 +23,7 @@ fun String.md5() = BigInteger(1, MessageDigest.getInstance("MD5").digest(toByteA
  *
  * @param predicate function that takes a element of the list and return true when predicate is matched
  *
- * @return List of List with a split parts
+ * @return List of List with a aoc.split parts
  */
 fun <A> List<A>.split(predicate: (A) -> Boolean): List<List<A>> {
     fun go(input: List<A>): List<List<A>> {

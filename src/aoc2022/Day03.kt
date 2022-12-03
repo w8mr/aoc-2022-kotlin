@@ -1,3 +1,12 @@
+package aoc2022
+
+import aoc.Literal
+import aoc.Seq
+import aoc.ZeroOrMore
+import aoc.Regex
+import aoc.Map
+import aoc.readFile
+
 fun main() {
     fun Char.score(): Int =
         when (this) {

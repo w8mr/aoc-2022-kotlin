@@ -1,3 +1,11 @@
+package aoc2022
+
+import aoc.Literal
+import aoc.OneOf
+import aoc.Seq4
+import aoc.ZeroOrMore
+import aoc.readFile
+
 enum class Item {
     ROCK,
     PAPER,
@@ -51,19 +59,22 @@ fun main() {
     val col1 = OneOf(
         Literal("A").to(Item.ROCK),
         Literal("B").to(Item.PAPER),
-        Literal("C").to(Item.SCISSOR))
+        Literal("C").to(Item.SCISSOR)
+    )
     val col2_part1 = OneOf(
         Literal("X").to(Item.ROCK),
         Literal("Y").to(Item.PAPER),
-        Literal("Z").to(Item.SCISSOR))
+        Literal("Z").to(Item.SCISSOR)
+    )
 
     val col2_part2 = OneOf(
-        Map(Literal("X")) { Result.LOSE },
-        Map(Literal("Y")) { Result.DRAW },
-        Map(Literal("Z")) { Result.WIN })
+        Literal("X").to(Result.LOSE),
+        Literal("Y").to(Result.DRAW),
+        Literal("Z").to(Result.WIN)
+    )
 
-    val parser1 = ZeroOrMore(Seq4(col1, Literal(" "), col2_part1, Literal("\n")) { c1, _, c2, _ -> Pair(c1,c2) } )
-    val parser2 = ZeroOrMore(Seq4(col1, Literal(" "), col2_part2, Literal("\n")) { c1, _, c2, _ -> Pair(c1,c2) } )
+    val parser1 = ZeroOrMore(Seq4(col1, Literal(" "), col2_part1, Literal("\n")) { c1, _, c2, _ -> Pair(c1, c2) })
+    val parser2 = ZeroOrMore(Seq4(col1, Literal(" "), col2_part2, Literal("\n")) { c1, _, c2, _ -> Pair(c1, c2) })
     // test if implementation meets criteria from the description, like:
     val testInput1 = parser1.parse(readFile(2022, 2, 1).readText())
     val testInput2 = parser2.parse(readFile(2022, 2, 1).readText())

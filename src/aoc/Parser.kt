@@ -1,3 +1,5 @@
+package aoc
+
 import java.lang.IllegalArgumentException
 
 class Context(val source: CharSequence, var index: Int = 0) {
@@ -16,7 +18,7 @@ class Regex(private val pattern: String): Parser<String>() {
         if (context.index > context.source.length) return context.error("End of File")
         val result = "^$pattern".toRegex().find(context.source.subSequence(context.index, context.source.length))
         return when (result) {
-            null -> context.error("Regex not matched")
+            null -> context.error("aoc.Regex not matched")
             else -> context.success(result.value, result.value.length)
         }
     }
@@ -41,8 +43,8 @@ class Map<R, T>(private val parser: Parser<R>, private val map: (value: R) -> T)
         }
 }
 
-//class Sep<R>(private val parser: Parser<R>, private val seperator: Regex): Parser<List<R>>() {
-//    override fun apply(context: Context): Boolean {
+//class Sep<R>(private val parser: aoc.Parser<R>, private val seperator: aoc.Regex): aoc.Parser<List<R>>() {
+//    override fun apply(context: aoc.Context): Boolean {
 //        val list = mutableListOf<R>()
 //        val result = parser.apply(context)
 //        list.add(context.result as R)
@@ -137,18 +139,18 @@ class OneOf<R>(private vararg val parsers: Parser<R>): Parser<R>() {
                 else -> {}
             }
         }
-        return context.error("OneOf has no match")
+        return context.error("aoc.OneOf has no match")
     }
 }
 
-class Or<L,R>(private val p1: Parser<L>, private val p2: Parser<R>): Parser<OrResult<L,R>>() {
+class Or<L,R>(private val p1: Parser<L>, private val p2: Parser<R>): Parser<OrResult<L, R>>() {
     override fun apply(context: Context): Result<OrResult<L, R>> =
         when (val r1 = p1.apply(context)) {
             is Success -> context.success(OrResult.Left(r1.value), 0)
             is Error ->
                 when (val r2 = p2.apply(context)) {
                     is Success -> context.success(OrResult.Right(r2.value), 0)
-                    is Error -> context.error("Or both failed")
+                    is Error -> context.error("aoc.Or both failed")
                 }
         }
 }

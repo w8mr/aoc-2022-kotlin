@@ -1,3 +1,10 @@
+package aoc2022
+
+import aoc.ZeroOrMore
+import aoc.endNLorEoF
+import aoc.number
+import aoc.readFile
+
 fun main() {
 
     fun sumCaloriesByElf(input: List<List<Int>>) =
