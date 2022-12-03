@@ -7,8 +7,7 @@ fun main() {
         }
 
     fun findCommonItemAndScore(input: List<List<List<Char>>>): Int {
-        val sets = input.map { it.map(List<Char>::toSet) }
-        return sets.map { it.reduce(Set<Char>::intersect).first().score() }.sum()
+        return input.sumOf { it.reduce(Iterable<Char>::intersect).single().score() }
     }
 
     fun part1(input: List<List<Char>>): Int =
@@ -23,7 +22,6 @@ fun main() {
 
     // test if implementation meets criteria from the description, like:
     val testInput = parser.parse(readFile(2022, 3, 1).readText())
-    println(testInput)
     check(part1(testInput) == 157)
     check(part2(testInput) == 70)
 
