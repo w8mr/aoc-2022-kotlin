@@ -1,6 +1,5 @@
 .gradle
 .idea
 build
-src/**/*.txt
+input/actual/
 dl.sh
-input/

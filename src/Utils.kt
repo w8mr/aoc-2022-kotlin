@@ -5,7 +5,8 @@ import java.security.MessageDigest
 fun readFile(year: Int, day: Int, test: Int? = null): File {
     fun Int.twoDigit() = String.format("%02d", this)
     val testSuffix = if (test != null) "_test${test.twoDigit()}" else ""
-    return File("input/$year/Day${day.twoDigit()}$testSuffix.txt")
+    val basePath = if (test != null) "input/test" else "input/actual"
+    return File("$basePath/$year/Day${day.twoDigit()}$testSuffix.txt")
 }
 
 /**
