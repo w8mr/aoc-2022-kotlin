@@ -49,13 +49,13 @@ fun main() {
     }
 
     val col1 = OneOf(
-        Map(Literal("A")) { Item.ROCK },
-        Map(Literal("B")) { Item.PAPER },
-        Map(Literal("C")) { Item.SCISSOR })
+        Literal("A").to(Item.ROCK),
+        Literal("B").to(Item.PAPER),
+        Literal("C").to(Item.SCISSOR))
     val col2_part1 = OneOf(
-        Map(Literal("X")) { Item.ROCK },
-        Map(Literal("Y")) { Item.PAPER },
-        Map(Literal("Z")) { Item.SCISSOR })
+        Literal("X").to(Item.ROCK),
+        Literal("Y").to(Item.PAPER),
+        Literal("Z").to(Item.SCISSOR))
 
     val col2_part2 = OneOf(
         Map(Literal("X")) { Result.LOSE },

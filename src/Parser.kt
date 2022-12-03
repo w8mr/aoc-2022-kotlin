@@ -179,4 +179,7 @@ abstract class Parser<R> {
             is Error -> throw IllegalArgumentException(result.error)
         }
 
+    fun <T> to(value: T) =
+        Map(this) { value }
+
 }
