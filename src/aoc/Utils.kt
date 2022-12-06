@@ -36,3 +36,18 @@ fun <A> List<A>.split(predicate: (A) -> Boolean): List<List<A>> {
     }
     return go(this)
 }
+
+fun <T> List<List<T>>.transpose(): List<List<T>> {
+    // Helpers
+    fun <T> List<T>.tail(): List<T> = this.takeLast(this.size - 1)
+    fun <T> T.append(xs: List<T>): List<T> = listOf(this).plus(xs)
+
+    this.filter { it.isNotEmpty() }.let { ys ->
+        return when (ys.isNotEmpty()) {
+            true -> ys.map { it.first() }.append(ys.map { it.tail() }.transpose())
+            else -> emptyList()
+        }
+    }
+}
+
+

@@ -179,11 +179,11 @@ class Seq6<R1, R2, R3, R4, R5, R6, T>(private val p1: Parser<R1>, private val p2
 
 
 sealed interface OrResult<out L, out R> {
-    data class Left<L>(val left: L) : OrResult<L, Nothing>
-    data class Right<R>(val right: R) : OrResult<Nothing, R>
+    data class Left<L>(val value: L) : OrResult<L, Nothing>
+    data class Right<R>(val value: R) : OrResult<Nothing, R>
 }
 
-class OneOf<R>(private vararg val parsers: Parser<R>): Parser<R>() {
+class OneOf<R>(private vararg val parsers: Parser<out R>): Parser<R>() {
     override fun apply(context: Context): Result<R> {
         for (parser in parsers) {
             when (val result = parser.apply(context)) {
@@ -215,9 +215,20 @@ class EoF(): Parser<Unit>() {
         }
 }
 
+class Empty(): Parser<Unit>() {
+    override fun apply(context: Context): Result<Unit> =
+        context.success(Unit, 0)
+}
 
 fun number() = Map(Regex("\\d+")) { it.toInt() }
 
+fun <R> optional(p: Parser<R>) : Parser<R?> =
+    Map(Or(p, Empty())) { o ->
+        when (o) {
+            is OrResult.Left -> o.value
+            is OrResult.Right -> null
+        }
+    }
 fun <R> endNLorEoF(parser: Parser<R>): Parser<R> = Seq(parser, Or(Literal("\n"), EoF())) { value, _ -> value }
 
 abstract class Parser<R> {
