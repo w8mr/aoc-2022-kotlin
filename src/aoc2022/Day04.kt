@@ -2,20 +2,20 @@ package aoc2022
 
 import aoc.*
 
-data class Zone(val start: Int, val end: Int) {
-    operator fun contains(other: Zone): Boolean =
-        other.start >= this.start &&
-                other.start <= this.end &&
-                other.end <= this.end &&
-                other.end >= this.start
-
-    infix fun overlap(other: Zone): Boolean =
-        (other.start >= this.start && other.start <= this.end) ||
-                (this.start >= other.start && this.start <= other.end)
-
-}
-
 fun main() {
+    data class Zone(val start: Int, val end: Int) {
+        operator fun contains(other: Zone): Boolean =
+            other.start >= this.start &&
+                    other.start <= this.end &&
+                    other.end <= this.end &&
+                    other.end >= this.start
+
+        infix fun overlap(other: Zone): Boolean =
+            (other.start >= this.start && other.start <= this.end) ||
+                    (this.start >= other.start && this.start <= other.end)
+
+    }
+
     val zone = Seq3(number(),Literal("-"), number()) { s, _, e -> Zone(s,e) }
     val pair = Seq4(zone, Literal(","), zone, Literal("\n")) { e1, _, e2, _ -> Pair(e1, e2) }
     val pairs = ZeroOrMore(pair)
