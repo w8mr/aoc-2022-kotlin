@@ -24,6 +24,24 @@ class Regex(private val pattern: String): Parser<String>() {
     }
 }
 
+abstract class Parser<R> {
+    sealed interface Result<R>
+    data class Success<R>(val value: R) : Result<R>
+    data class Error<R>(val error: String) : Result<R>
+
+    abstract fun apply(context: Context): Result<R>
+
+    fun parse(source: CharSequence): R =
+        when (val result = apply(Context(source))) {
+            is Success -> result.value
+            is Error -> throw IllegalArgumentException(result.error)
+        }
+
+    fun <T> to(value: T) =
+        Map(this) { value }
+
+}
+
 class Literal(private val literal: String): Parser<String>() {
     override fun apply(context: Context): Result<String> {
         if (context.index > context.source.length) return context.error("End of File")
@@ -74,109 +92,36 @@ class ZeroOrMore<R>(private val parser: Parser<R>): Parser<List<R>>() {
         return context.success(list, 0)    }
 }
 
-
-
-
-class Seq<R1, R2, T>(private val p1: Parser<R1>, private val p2: Parser<R2>, private val map: (v1: R1, v2: R2) -> T): Parser<T>() {
+fun <R1, R2, T> seq(p1: Parser<R1>, p2: Parser<R2>, map: (v1: R1, v2: R2) -> T) = object: Parser<T>() {
     override fun apply(context: Context): Result<T> =
         when (val r1 = p1.apply(context)) {
             is Success ->
                 when (val r2 = p2.apply(context)) {
                     is Success -> context.success(map(r1.value, r2.value), 0)
-                    is Error -> context.error("Sequence second parser failed")
+                    is Error -> context.error("seq second failed: ${r2.error}")
                 }
-            is Error -> context.error("Sequence first parser failed")
+            is Error -> context.error("seq first failed: ${r1.error}")
         }
 }
 
-class Seq3<R1, R2, R3, T>(private val p1: Parser<R1>, private val p2: Parser<R2>, private val p3: Parser<R3>, private val map: (v1: R1, v2: R2, v3: R3) -> T): Parser<T>() {
-    override fun apply(context: Context): Result<T> =
-        when (val r1 = p1.apply(context)) {
-            is Success ->
-                when (val r2 = p2.apply(context)) {
-                    is Success ->
-                        when (val r3 = p3.apply(context)) {
-                            is Success -> context.success(map(r1.value, r2.value, r3.value), 0)
-                            is Error -> context.error("Sequence third parser failed")
-                        }
-                    is Error -> context.error("Sequence second parser failed")
-                }
-            is Error -> context.error("Sequence first parser failed")
-        }
+fun <R1, R2> seq(p1: Parser<R1>, p2: Parser<R2>) =
+    seq(p1,p2) { v1, v2 -> Pair(v1, v2) }
+
+fun <R1, R2, R3, T> seq(p1: Parser<R1>, p2: Parser<R2>, p3: Parser<R3>, map: (v1: R1, v2: R2, v3: R3) -> T): Parser<T> {
+    return seq(seq(p1, p2), p3) { (v1, v2), v3 -> map(v1, v2, v3) }
 }
 
-class Seq4<R1, R2, R3, R4, T>(private val p1: Parser<R1>, private val p2: Parser<R2>, private val p3: Parser<R3>, private val p4: Parser<R4>, private val map: (v1: R1, v2: R2, v3: R3, v4: R4) -> T): Parser<T>() {
-    override fun apply(context: Context): Result<T> =
-        when (val r1 = p1.apply(context)) {
-            is Success ->
-                when (val r2 = p2.apply(context)) {
-                    is Success ->
-                        when (val r3 = p3.apply(context)) {
-                            is Success ->
-                                when (val r4 = p4.apply(context)) {
-                                    is Success -> context.success(map(r1.value, r2.value, r3.value, r4.value), 0)
-                                    is Error -> context.error("Sequence forth parser failed")
-                                }
-                            is Error -> context.error("Sequence third parser failed")
-                        }
-                    is Error -> context.error("Sequence second parser failed")
-                }
-            is Error -> context.error("Sequence first parser failed")
-        }
+fun <R1, R2, R3, R4, T> seq(p1: Parser<R1>, p2: Parser<R2>, p3: Parser<R3>, p4: Parser<R4>, map: (v1: R1, v2: R2, v3: R3, v4: R4) -> T): Parser<T> {
+    return seq(seq(p1, p2), seq(p3, p4)) { (v1, v2), (v3, v4) -> map(v1, v2, v3, v4) }
 }
 
-class Seq5<R1, R2, R3, R4, R5, T>(private val p1: Parser<R1>, private val p2: Parser<R2>, private val p3: Parser<R3>, private val p4: Parser<R4>, private val p5: Parser<R5>, private val map: (v1: R1, v2: R2, v3: R3, v4: R4, v5: R5) -> T): Parser<T>() {
-    override fun apply(context: Context): Result<T> =
-        when (val r1 = p1.apply(context)) {
-            is Success ->
-                when (val r2 = p2.apply(context)) {
-                    is Success ->
-                        when (val r3 = p3.apply(context)) {
-                            is Success ->
-                                when (val r4 = p4.apply(context)) {
-                                    is Success ->
-                                        when (val r5 = p5.apply(context)) {
-                                            is Success -> context.success(map(r1.value, r2.value, r3.value, r4.value, r5.value), 0)
-                                            is Error -> context.error("Sequence fifth parser failed")
-                                        }
-                                    is Error -> context.error("Sequence forth parser failed")
-                                }
-                            is Error -> context.error("Sequence third parser failed")
-                        }
-                    is Error -> context.error("Sequence second parser failed")
-                }
-            is Error -> context.error("Sequence first parser failed")
-        }
+fun <R1, R2, R3, R4, R5, T> seq(p1: Parser<R1>, p2: Parser<R2>, p3: Parser<R3>, p4: Parser<R4>, p5: Parser<R5>, map: (v1: R1, v2: R2, v3: R3, v4: R4, v5: R5) -> T): Parser<T> {
+    return seq(seq(p1, p2), seq(p3, p4), p5) { (v1, v2), (v3, v4), v5 -> map(v1, v2, v3, v4, v5) }
 }
 
-class Seq6<R1, R2, R3, R4, R5, R6, T>(private val p1: Parser<R1>, private val p2: Parser<R2>, private val p3: Parser<R3>, private val p4: Parser<R4>, private val p5: Parser<R5>, private val p6: Parser<R6>, private val map: (v1: R1, v2: R2, v3: R3, v4: R4, v5: R5, v6: R6) -> T): Parser<T>() {
-    override fun apply(context: Context): Result<T> =
-        when (val r1 = p1.apply(context)) {
-            is Success ->
-                when (val r2 = p2.apply(context)) {
-                    is Success ->
-                        when (val r3 = p3.apply(context)) {
-                            is Success ->
-                                when (val r4 = p4.apply(context)) {
-                                    is Success ->
-                                        when (val r5 = p5.apply(context)) {
-                                            is Success ->
-                                                when (val r6 = p6.apply(context)) {
-                                                    is Success -> context.success(map(r1.value, r2.value, r3.value, r4.value, r5.value, r6.value), 0)
-                                                    is Error -> context.error("Sequence sixth parser failed")
-                                                }
-                                            is Error -> context.error("Sequence fifth parser failed")
-                                        }
-                                    is Error -> context.error("Sequence forth parser failed")
-                                }
-                            is Error -> context.error("Sequence third parser failed")
-                        }
-                    is Error -> context.error("Sequence second parser failed")
-                }
-            is Error -> context.error("Sequence first parser failed")
-        }
+fun <R1, R2, R3, R4, R5, R6, T> seq(p1: Parser<R1>, p2: Parser<R2>, p3: Parser<R3>, p4: Parser<R4>, p5: Parser<R5>, p6: Parser<R6>, map: (v1: R1, v2: R2, v3: R3, v4: R4, v5: R5, v6: R6) -> T): Parser<T> {
+    return seq(seq(p1, p2), seq(p3, p4), seq(p5, p6) { v5, v6 -> Pair(v5, v6) }) { (v1, v2), (v3, v4), (v5, v6) -> map(v1, v2, v3, v4, v5, v6) }
 }
-
 
 sealed interface OrResult<out L, out R> {
     data class Left<L>(val value: L) : OrResult<L, Nothing>
@@ -229,22 +174,5 @@ fun <R> optional(p: Parser<R>) : Parser<R?> =
             is OrResult.Right -> null
         }
     }
-fun <R> endNLorEoF(parser: Parser<R>): Parser<R> = Seq(parser, Or(Literal("\n"), EoF())) { value, _ -> value }
+fun <R> endNLorEoF(parser: Parser<R>): Parser<R> = seq(parser, Or(Literal("\n"), EoF())) { value, _ -> value }
 
-abstract class Parser<R> {
-    sealed interface Result<R>
-    data class Success<R>(val value: R) : Result<R>
-    data class Error<R>(val error: String) : Result<R>
-
-    abstract fun apply(context: Context): Result<R>
-
-    fun parse(source: CharSequence): R =
-        when (val result = apply(Context(source))) {
-            is Success -> result.value
-            is Error -> throw IllegalArgumentException(result.error)
-        }
-
-    fun <T> to(value: T) =
-        Map(this) { value }
-
-}

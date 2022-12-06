@@ -1,11 +1,7 @@
 package aoc2022
 
-import aoc.Literal
-import aoc.Seq
-import aoc.ZeroOrMore
-import aoc.Regex
+import aoc.*
 import aoc.Map
-import aoc.readFile
 
 fun main() {
     fun Char.score(): Int =
@@ -25,7 +21,7 @@ fun main() {
     fun part2(input: List<List<Char>>): Int =
         findCommonItemAndScore(input.chunked(3))
 
-    val line = Seq(Regex("[a-zA-Z]*"), Literal("\n")) { l, _ -> l }
+    val line = seq(Regex("[a-zA-Z]*"), Literal("\n")) { l, _ -> l }
     val bag = Map(line, String::toList)
     val parser = ZeroOrMore(bag)
 

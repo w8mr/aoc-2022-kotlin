@@ -13,20 +13,20 @@ data class Filled(override val id: Char): Crate
 data class Move(val count: Int, val from: Int, val to: Int)
 
 fun main() {
-    val filled = Seq3(Literal("["), Regex("[A-Z]"), Literal("]")) { _, c, _-> Filled(c[0]) }
+    val filled = seq(Literal("["), Regex("[A-Z]"), Literal("]")) { _, c, _-> Filled(c[0]) }
     val empty = Literal("   ").to(Empty)
-    val crate = Seq(OneOf(filled, empty), optional(Literal(" "))) { c, _ -> c }
-    val crateLine = Seq(ZeroOrMore(crate), Literal("\n")) { cs, _ -> cs}
+    val crate = seq(OneOf(filled, empty), optional(Literal(" "))) { c, _ -> c }
+    val crateLine = seq(ZeroOrMore(crate), Literal("\n")) { cs, _ -> cs}
     val crates = ZeroOrMore(crateLine)
 
-    val crateNumbers = Seq(Regex("(?:[ ]*\\d*[ ]*)*"), Literal("\n\n")) { n, _ -> n }
+    val crateNumbers = seq(Regex("(?:[ ]*\\d*[ ]*)*"), Literal("\n\n")) { n, _ -> n }
 
-    val move = Seq(Literal("move "), number()) { _, c -> c }
-    val from = Seq(Literal(" from "), number()) { _, c -> c }
-    val to = Seq(Literal(" to "), number()) { _, c -> c }
-    val instructions = ZeroOrMore(Seq4(move, from, to, Literal("\n") ) { c, f, t, _ -> Move(c,f,t) })
+    val move = seq(Literal("move "), number()) { _, c -> c }
+    val from = seq(Literal(" from "), number()) { _, c -> c }
+    val to = seq(Literal(" to "), number()) { _, c -> c }
+    val instructions = ZeroOrMore(seq(move, from, to, Literal("\n") ) { c, f, t, _ -> Move(c,f,t) })
 
-    val parser = Seq3(crates, crateNumbers, instructions) { c, _, i -> Pair(c, i) }
+    val parser = seq(crates, crateNumbers, instructions) { c, _, i -> Pair(c, i) }
 
     fun <T> List<List<T>>.move(move: Move, f: (List<T>) -> List<T>): List<List<T>> {
         val movedCrates = f(this[move.from-1].take(move.count))

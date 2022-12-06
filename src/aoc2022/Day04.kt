@@ -16,8 +16,8 @@ fun main() {
 
     }
 
-    val zone = Seq3(number(),Literal("-"), number()) { s, _, e -> Zone(s,e) }
-    val pair = Seq4(zone, Literal(","), zone, Literal("\n")) { e1, _, e2, _ -> Pair(e1, e2) }
+    val zone = seq(number(),Literal("-"), number()) { s, _, e -> Zone(s,e) }
+    val pair = seq(zone, Literal(","), zone, Literal("\n")) { e1, _, e2, _ -> Pair(e1, e2) }
     val pairs = ZeroOrMore(pair)
 
     fun part1(input: String): Int {

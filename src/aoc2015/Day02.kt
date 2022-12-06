@@ -12,7 +12,7 @@ data class Box(val l: Int, val w: Int, val h: Int) {
 }
 
 fun main() {
-    val box = Seq6(
+    val box = seq(
         number(),Literal("x"),
         number(),Literal("x"),
         number(), Literal("\n"))
