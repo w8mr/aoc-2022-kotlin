@@ -20,7 +20,17 @@ fun main() {
     // test if implementation meets criteria from the description, like:
     val testInput = readFile(2022, 6, 1).readText()
     check(part1(testInput) == 7)
+
+    check(part1("bvwbjplbgvbhsrlpgdmjqwftvncz") == 5)
+    check(part1("nppdvjthqldpwncqszvftbrmjlhg") == 6)
+    check(part1("nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg") == 10)
+    check(part1("zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw") == 11)
+
     check(part2(testInput) == 19)
+    check(part2("bvwbjplbgvbhsrlpgdmjqwftvncz") == 23)
+    check(part2("nppdvjthqldpwncqszvftbrmjlhg") == 23)
+    check(part2("nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg") == 29)
+    check(part2("zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw") == 26)
 
     val input = readFile(2022, 6).readText()
     check(part1(input) == 1100)
