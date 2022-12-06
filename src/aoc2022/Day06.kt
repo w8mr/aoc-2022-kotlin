@@ -34,7 +34,7 @@ fun main() {
 
     val input = readFile(2022, 6).readText()
     check(part1(input) == 1100)
-//    check(part2(input) == 201491)
+    check(part2(input) == 2421)
     println(part1(input))
     println(part2(input))
 }
