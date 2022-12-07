@@ -50,4 +50,15 @@ fun <T> List<List<T>>.transpose(): List<List<T>> {
     }
 }
 
+fun <R, T> foldTree(tree: R, subNodes: (R) -> List<R>, init: T, f: (T, R) -> T): T {
+    fun go(node: R, acc: T, f: (T, R) -> T): T {
+        val nacc = f(acc, node)
+        val subs = subNodes(node)
+        return subs.fold(nacc) { a, n -> go(n, a, f) }
+    }
+    return go(tree, init, f)
+}
+
+
+
 

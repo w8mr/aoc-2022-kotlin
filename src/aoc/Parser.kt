@@ -1,6 +1,7 @@
 package aoc
 
 import java.lang.IllegalArgumentException
+import kotlin.reflect.KProperty0
 
 class Context(val source: CharSequence, var index: Int = 0) {
     fun <R> error(message: String = "Unknown"): Parser.Result<R> {
@@ -41,6 +42,7 @@ abstract class Parser<R> {
         Map(this) { value }
 
 }
+
 
 class Literal(private val literal: String): Parser<String>() {
     override fun apply(context: Context): Result<String> {
@@ -84,9 +86,13 @@ class ZeroOrMore<R>(private val parser: Parser<R>): Parser<List<R>>() {
     override fun apply(context: Context): Result<List<R>> {
         val list = mutableListOf<R>()
         while (context.index < context.source.length) {
+            val cur = context.index
             when (val result = parser.apply(context)) {
                 is Success -> list.add(result.value)
-                else -> break
+                else -> {
+                    context.index = cur
+                    break
+                }
             }
         }
         return context.success(list, 0)    }
@@ -164,6 +170,14 @@ class Empty(): Parser<Unit>() {
     override fun apply(context: Context): Result<Unit> =
         context.success(Unit, 0)
 }
+
+fun <R> ref(parserRef: KProperty0<Parser<R>>): Parser<R> = object : Parser<R>() {
+    override fun apply(context: Context): Result<R> {
+        return parserRef.get().apply(context)
+    }
+
+}
+
 
 fun number() = Map(Regex("\\d+")) { it.toInt() }
 
