@@ -37,12 +37,16 @@ abstract class Parser<R> {
             is Success -> result.value
             is Error -> throw IllegalArgumentException(result.error)
         }
-
-    fun <T> to(value: T) =
-        Map(this) { value }
-
 }
 
+fun <R, T> Parser<R>.to(value: T) =
+    Map(this) { value }
+
+operator fun <T> Parser<T>.plus(literal: String) =
+    seq(this, Literal(literal)) { v, _ -> v }
+
+//operator fun <T> String.plus(parser: Parser<T>) =
+//    seq(Literal(this), parser) { _, v -> v }
 
 class Literal(private val literal: String): Parser<String>() {
     override fun apply(context: Context): Result<String> {
@@ -180,6 +184,7 @@ fun <R> ref(parserRef: KProperty0<Parser<R>>): Parser<R> = object : Parser<R>() 
 
 
 fun number() = Map(Regex("\\d+")) { it.toInt() }
+fun digit() = Map(Regex("\\d")) { it.toInt() }
 
 fun <R> optional(p: Parser<R>) : Parser<R?> =
     Map(Or(p, Empty())) { o ->
