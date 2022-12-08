@@ -16,9 +16,9 @@ fun main() {
 
     }
 
-    val zone = seq(number(),Literal("-"), number()) { s, _, e -> Zone(s,e) }
-    val pair = seq(zone, Literal(","), zone, Literal("\n")) { e1, _, e2, _ -> Pair(e1, e2) }
-    val pairs = ZeroOrMore(pair)
+    val zone = seq(number()+"-", number()) { s, e -> Zone(s,e) }
+    val pair = seq(zone+",", zone+"\n") { e1, e2 -> Pair(e1, e2) }
+    val pairs = zeroOrMore(pair)
 
     fun part1(input: String): Int {
         return pairs.parse(input).map { (e1, e2) -> e1 in e2 || e2 in e1 }.count { it }

@@ -13,11 +13,11 @@ data class Box(val l: Int, val w: Int, val h: Int) {
 
 fun main() {
     val box = seq(
-        number(),Literal("x"),
-        number(),Literal("x"),
-        number(), Literal("\n"))
-    { l, _, w, _, h, _ -> Box(l,w,h) }
-    val boxes = ZeroOrMore(box)
+        number()+"x",
+        number()+"x",
+        number()+"\n")
+    { l, w, h -> Box(l,w,h) }
+    val boxes = zeroOrMore(box)
 
     fun part1(input: String): Int {
         return boxes.parse(input).map(Box::wrappingPaper).sum()

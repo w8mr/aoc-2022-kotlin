@@ -8,7 +8,7 @@ fun main() {
     val down = Literal("v").to(Coord::down)
     val right = Literal(">").to(Coord::right)
     val left = Literal("<").to(Coord::left)
-    val instructions = ZeroOrMore(OneOf(up, down, right, left))
+    val instructions = zeroOrMore(OneOf(up, down, right, left))
 
     fun vistedHouses(i: List<KFunction1<Coord, Coord>>) =
         i.scan(Coord()) { acc, instr -> instr(acc) }.toSet()

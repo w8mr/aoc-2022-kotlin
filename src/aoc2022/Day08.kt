@@ -3,8 +3,8 @@ package aoc2022
 import aoc.*
 
 fun main() {
-    val row = ZeroOrMore(digit())+"\n"
-    val parser = ZeroOrMore(row)
+    val row = zeroOrMore(digit())+"\n"
+    val parser = zeroOrMore(row)
 
     fun part1(input: String): Int {
         val grid = parser.parse(input)

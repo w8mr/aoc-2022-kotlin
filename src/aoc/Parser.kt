@@ -86,7 +86,7 @@ class Map<R, T>(private val parser: Parser<R>, private val map: (value: R) -> T)
 //    }
 //}
 
-class ZeroOrMore<R>(private val parser: Parser<R>): Parser<List<R>>() {
+fun <R> zeroOrMore(parser: Parser<R>) = object: Parser<List<R>>() {
     override fun apply(context: Context): Result<List<R>> {
         val list = mutableListOf<R>()
         while (context.index < context.source.length) {

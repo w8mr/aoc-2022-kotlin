@@ -6,7 +6,7 @@ fun main() {
     val up = Literal("(").to(1)
     val down = Literal(")").to(-1)
     val instruction = OneOf(up,down)
-    val instructions = ZeroOrMore(instruction)
+    val instructions = zeroOrMore(instruction)
 
 
     fun part1(input: String): Int {

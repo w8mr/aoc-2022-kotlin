@@ -23,7 +23,7 @@ fun main() {
 
     val line = seq(Regex("[a-zA-Z]*"), Literal("\n")) { l, _ -> l }
     val bag = Map(line, String::toList)
-    val parser = ZeroOrMore(bag)
+    val parser = zeroOrMore(bag)
 
     // test if implementation meets criteria from the description, like:
     val testInput = parser.parse(readFile(2022, 3, 1).readText())

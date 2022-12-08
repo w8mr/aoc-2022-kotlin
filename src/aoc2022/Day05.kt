@@ -16,15 +16,15 @@ fun main() {
     val filled = seq(Literal("["), Regex("[A-Z]"), Literal("]")) { _, c, _-> Filled(c[0]) }
     val empty = Literal("   ").to(Empty)
     val crate = seq(OneOf(filled, empty), optional(Literal(" "))) { c, _ -> c }
-    val crateLine = seq(ZeroOrMore(crate), Literal("\n")) { cs, _ -> cs}
-    val crates = ZeroOrMore(crateLine)
+    val crateLine = seq(zeroOrMore(crate), Literal("\n")) { cs, _ -> cs}
+    val crates = zeroOrMore(crateLine)
 
     val crateNumbers = seq(Regex("(?:[ ]*\\d*[ ]*)*"), Literal("\n\n")) { n, _ -> n }
 
     val move = seq(Literal("move "), number()) { _, c -> c }
     val from = seq(Literal(" from "), number()) { _, c -> c }
     val to = seq(Literal(" to "), number()) { _, c -> c }
-    val instructions = ZeroOrMore(seq(move, from, to, Literal("\n") ) { c, f, t, _ -> Move(c,f,t) })
+    val instructions = zeroOrMore(seq(move, from, to, Literal("\n") ) { c, f, t, _ -> Move(c,f,t) })
 
     val parser = seq(crates, crateNumbers, instructions) { c, _, i -> Pair(c, i) }
 

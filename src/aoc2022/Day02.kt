@@ -69,8 +69,8 @@ fun main() {
         Literal("Z").to(Result.WIN)
     )
 
-    val parser1 = ZeroOrMore(seq(col1, Literal(" "), col2_part1, Literal("\n")) { c1, _, c2, _ -> Pair(c1, c2) })
-    val parser2 = ZeroOrMore(seq(col1, Literal(" "), col2_part2, Literal("\n")) { c1, _, c2, _ -> Pair(c1, c2) })
+    val parser1 = zeroOrMore(seq(col1+" ", col2_part1+"\n") { c1, c2 -> Pair(c1, c2) })
+    val parser2 = zeroOrMore(seq(col1+" ", col2_part2+"\n") { c1, c2 -> Pair(c1, c2) })
     // test if implementation meets criteria from the description, like:
     val testInput1 = parser1.parse(readFile(2022, 2, 1).readText())
     val testInput2 = parser2.parse(readFile(2022, 2, 1).readText())

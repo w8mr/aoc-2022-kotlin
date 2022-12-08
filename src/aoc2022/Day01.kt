@@ -1,9 +1,6 @@
 package aoc2022
 
-import aoc.ZeroOrMore
-import aoc.endNLorEoF
-import aoc.number
-import aoc.readFile
+import aoc.*
 
 fun main() {
 
@@ -19,8 +16,8 @@ fun main() {
     }
 
     val calories = endNLorEoF(number())
-    val elf = endNLorEoF(ZeroOrMore(calories))
-    val elfs = ZeroOrMore(elf)
+    val elf = endNLorEoF(zeroOrMore(calories))
+    val elfs = zeroOrMore(elf)
 
     // test if implementation meets criteria from the description, like:
     val testInput = elfs.parse(readFile(2022, 1, 1).readText())
