@@ -1,5 +1,6 @@
 package aoc
 
+import aoc2022.Noop
 import java.lang.IllegalArgumentException
 import kotlin.reflect.KProperty0
 
@@ -42,6 +43,9 @@ abstract class Parser<R> {
 fun <R, T> Parser<R>.to(value: T) =
     Map(this) { value }
 
+infix fun <R, T> Parser<R>.asValue(value: T) = this.to(value)
+infix fun <T> String.asValue(value: T) = Literal(this) asValue value
+
 operator fun <T> Parser<T>.plus(literal: String) =
     seq(this, Literal(literal)) { v, _ -> v }
 
@@ -65,6 +69,17 @@ class Map<R, T>(private val parser: Parser<R>, private val map: (value: R) -> T)
             is Success -> context.success(this.map(result.value), 0)
             is Error -> context.error(result.error)
         }
+}
+
+infix fun <R,T> Parser<R>.map(map: (value: R) -> T): Parser<T> {
+    val parser = this
+    return object: Parser<T>() {
+        override fun apply(context: Context): Parser.Result<T> =
+            when (val result = parser.apply(context)) {
+                is Parser.Success -> context.success(map(result.value), 0)
+                is Parser.Error -> context.error(result.error)
+            }
+    }
 }
 
 //class Sep<R>(private val parser: aoc.Parser<R>, private val seperator: aoc.Regex): aoc.Parser<List<R>>() {
@@ -162,6 +177,11 @@ class Or<L,R>(private val p1: Parser<L>, private val p2: Parser<R>): Parser<OrRe
         }
 }
 
+infix fun <L,R> Parser<L>.orLR(other: Parser<R>): Parser<OrResult<L, R>> = Or(this, other)
+
+@JvmName("or")
+infix fun <L> Parser<out L>.or(other: Parser<out L>): Parser<L> = OneOf(this, other)
+
 class EoF(): Parser<Unit>() {
     override fun apply(context: Context): Result<Unit> =
         when  {
@@ -183,7 +203,7 @@ fun <R> ref(parserRef: KProperty0<Parser<R>>): Parser<R> = object : Parser<R>() 
 }
 
 
-fun number() = Map(Regex("\\d+")) { it.toInt() }
+fun number() = Map(Regex("-?\\d+")) { it.toInt() }
 fun digit() = Map(Regex("\\d")) { it.toInt() }
 
 fun <R> optional(p: Parser<R>) : Parser<R?> =
