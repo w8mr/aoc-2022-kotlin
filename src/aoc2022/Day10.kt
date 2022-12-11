@@ -4,20 +4,19 @@ import aoc.*
 data class Context(var clockcycle: Int = 0, var register: Int = 1)
 
 sealed interface Instruction {
-    fun run(context: Context): Context
+    fun run(context: Context): List<Context>
 }
 data class Addx(val value: Int) : Instruction {
-    override fun run(context: Context): Context {
-        return Context(
+    override fun run(context: Context): List<Context> {
+        return listOf(context.copy(clockcycle = context.clockcycle + 1), Context(
             context.clockcycle + 2,
-            context.register + value)
+            context.register + value))
     }
 }
 object Noop : Instruction {
-    override fun run(context: Context): Context {
-        return Context(
-            context.clockcycle + 1,
-            context.register)
+    override fun run(context: Context): List<Context> {
+        return listOf(context.copy(clockcycle =
+            context.clockcycle + 1))
     }
 }
 
@@ -28,33 +27,32 @@ val parser = zeroOrMore(instruction)
 
 fun main() {
 
-    fun nextCheckPoint(iter: Iterator<Context>, n: Int, acc: Int): Int {
-        var old = 0
-        while (iter.hasNext()) {
-            val c = iter.next()
-            if (c.clockcycle >= n) {
-                return acc + n * old
-            } else {
-                old = c.register
-            }
-        }
-        return acc
+    fun calcState(input: String): List<Context> {
+        val r = parser.parse(input)
+        val state = r.scan(listOf(Context())) { c, instr ->
+            instr.run(c.last())
+        }.flatten()
+        return state
     }
 
     fun part1(input: String): Int {
-        val r = parser.parse(input)
-        val state = r.scan(Context()) {
-            c, instr -> instr.run(c)
-        }
-        val iter = state.iterator()
-        val result = listOf<Int>(20,60,100,140,180,220).fold(0) { acc, n ->
-            nextCheckPoint(iter, n, acc)
-        }
-        return result
+        val state = calcState(input)
+        return (20..220 step 40).map { n ->
+            n * state[n - 1].register
+        }.sum()
     }
 
-    fun part2(input: String): Int {
-        return TODO()
+    fun part2(input: String): String {
+        val state = calcState(input)
+        val r = state.chunked(40).map {
+            it.mapIndexed { i, r ->
+                when (i in ((r.register - 1)..(r.register + 1))) {
+                    true -> '#'
+                    false -> '.'
+                }
+            }
+        }
+        return r.map { it.joinToString(separator = "") }.joinToString(separator = "\n")
     }
     // test if implementation meets criteria from the description, like:/
     val testInput = readFile(2022, 10, 1).readText()
@@ -62,13 +60,9 @@ fun main() {
     check(part1(testInput) == 13140)
 
     println(part1(input))
-    check(part1(input) == TODO())
-
-    check(part2(testInput) == TODO())
+    check(part1(input) == 14540)
 
     println(part2(input))
-    check(part2(input) == TODO())
-
 }
 
 private infix fun <R> String.followedBy(parser: Parser<R>): Parser<R> = seq(Literal(this), parser) { _, n -> n }
