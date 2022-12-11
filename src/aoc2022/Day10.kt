@@ -1,22 +1,17 @@
 package aoc2022
 
 import aoc.*
-data class Context(var clockcycle: Int = 0, var register: Int = 1)
-
 sealed interface Instruction {
-    fun run(context: Context): List<Context>
+    fun run(register: Int): List<Int>
 }
 data class Addx(val value: Int) : Instruction {
-    override fun run(context: Context): List<Context> {
-        return listOf(context.copy(clockcycle = context.clockcycle + 1), Context(
-            context.clockcycle + 2,
-            context.register + value))
+    override fun run(register: Int): List<Int> {
+        return listOf(register, register + value)
     }
 }
 object Noop : Instruction {
-    override fun run(context: Context): List<Context> {
-        return listOf(context.copy(clockcycle =
-            context.clockcycle + 1))
+    override fun run(register: Int): List<Int> {
+        return listOf(register)
     }
 }
 
@@ -27,9 +22,9 @@ val parser = zeroOrMore(instruction)
 
 fun main() {
 
-    fun calcState(input: String): List<Context> {
+    fun calcState(input: String): List<Int> {
         val r = parser.parse(input)
-        val state = r.scan(listOf(Context())) { c, instr ->
+        val state = r.scan(listOf(1)) { c, instr ->
             instr.run(c.last())
         }.flatten()
         return state
@@ -38,7 +33,7 @@ fun main() {
     fun part1(input: String): Int {
         val state = calcState(input)
         return (20..220 step 40).map { n ->
-            n * state[n - 1].register
+            n * state[n - 1]
         }.sum()
     }
 
@@ -46,7 +41,7 @@ fun main() {
         val state = calcState(input)
         val r = state.chunked(40).map {
             it.mapIndexed { i, r ->
-                when (i in ((r.register - 1)..(r.register + 1))) {
+                when (i in ((r - 1)..(r + 1))) {
                     true -> '#'
                     false -> '.'
                 }
