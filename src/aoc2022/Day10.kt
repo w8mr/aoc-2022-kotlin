@@ -59,6 +59,3 @@ fun main() {
 
     println(part2(input))
 }
-
-private infix fun <R> String.followedBy(parser: Parser<R>): Parser<R> = seq(Literal(this), parser) { _, n -> n }
-

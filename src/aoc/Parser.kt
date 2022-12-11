@@ -1,6 +1,5 @@
 package aoc
 
-import aoc2022.Noop
 import java.lang.IllegalArgumentException
 import kotlin.reflect.KProperty0
 
@@ -74,10 +73,10 @@ class Map<R, T>(private val parser: Parser<R>, private val map: (value: R) -> T)
 infix fun <R,T> Parser<R>.map(map: (value: R) -> T): Parser<T> {
     val parser = this
     return object: Parser<T>() {
-        override fun apply(context: Context): Parser.Result<T> =
+        override fun apply(context: Context): Result<T> =
             when (val result = parser.apply(context)) {
-                is Parser.Success -> context.success(map(result.value), 0)
-                is Parser.Error -> context.error(result.error)
+                is Success -> context.success(map(result.value), 0)
+                is Error -> context.error(result.error)
             }
     }
 }
@@ -202,6 +201,7 @@ fun <R> ref(parserRef: KProperty0<Parser<R>>): Parser<R> = object : Parser<R>() 
 
 }
 
+infix fun <R> String.followedBy(parser: Parser<R>): Parser<R> = seq(Literal(this), parser) { _, n -> n }
 
 fun number() = Map(Regex("-?\\d+")) { it.toInt() }
 fun digit() = Map(Regex("\\d")) { it.toInt() }
