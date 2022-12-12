@@ -81,24 +81,7 @@ infix fun <R,T> Parser<R>.map(map: (value: R) -> T): Parser<T> {
     }
 }
 
-//class Sep<R>(private val parser: aoc.Parser<R>, private val seperator: aoc.Regex): aoc.Parser<List<R>>() {
-//    override fun apply(context: aoc.Context): Boolean {
-//        val list = mutableListOf<R>()
-//        val result = parser.apply(context)
-//        list.add(context.result as R)
-//        while (true) {
-//            val rsep = seperator.apply(context)
-//            val rinner = parser.apply(context)
-//            if (rsep && rinner) {
-//                list.add(context.result as R)
-//            } else {
-//                context.result = list
-//                return true
-//            }
-//        }
-//        return false
-//    }
-//}
+infix fun <R> Parser<R>.sepBy(separator: String, ) = zeroOrMore(seq(this, optional(Literal(separator))) { n, _ -> n })
 
 fun <R> zeroOrMore(parser: Parser<R>) = object: Parser<List<R>>() {
     override fun apply(context: Context): Result<List<R>> {
@@ -176,10 +159,10 @@ class Or<L,R>(private val p1: Parser<L>, private val p2: Parser<R>): Parser<OrRe
         }
 }
 
-infix fun <L,R> Parser<L>.orLR(other: Parser<R>): Parser<OrResult<L, R>> = Or(this, other)
-
-@JvmName("or")
 infix fun <L> Parser<out L>.or(other: Parser<out L>): Parser<L> = OneOf(this, other)
+
+infix fun <L,R> Parser<L>.or_(other: Parser<R>): Parser<OrResult<L, R>> = Or(this, other)
+
 
 class EoF(): Parser<Unit>() {
     override fun apply(context: Context): Result<Unit> =
