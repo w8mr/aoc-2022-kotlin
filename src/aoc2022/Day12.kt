@@ -90,7 +90,6 @@ fun main() {
         }
 
         val key = shortestPaths.keys.find(predicate)
-        //      println(key)
 
         return shortestPaths[key]?.first
     }
@@ -108,7 +107,6 @@ fun main() {
                 .map { Pair(1, GridBackedGraphNode(g, it.first)) }
             neighbours
         }
-//        println(dag)
 
 
         return findShortestPath(dag) { (it as GridBackedGraphNode).value is End }!!
@@ -127,7 +125,6 @@ fun main() {
                 .map { Pair(1, GridBackedGraphNode(g, it.first)) }
             neighbours
         }
-        println(dag)
 
 
         return findShortestPath(dag) {
@@ -147,7 +144,6 @@ fun main() {
     println(part1(input))
     check(part1(input) == 517)
 
-    println(part2(testInput))
     check(part2(testInput) == 29)
 
     println(part2(input))
