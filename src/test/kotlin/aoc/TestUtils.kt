@@ -19,25 +19,25 @@ private fun <T,R> T.runSafe(code: T.() -> R): RunSafeResult {
     }
 }
 
-private fun RunSafeResult.handle(day: Int, part: Int, print: Boolean, expected: Any? = null) {
+private fun RunSafeResult.handle(year: Int, day: Int, part: Int, print: Boolean, expected: Any? = null) {
     when (this) {
         is RunSafeResult.Success<*> -> {
-            if (print) println("Day $day part $part: ${this.value}")
+            if (print) println("Year $year day $day part $part: ${this.value}")
             if (expected != null) {
                 assertEquals(expected, this.value)
             }
         }
 
         RunSafeResult.NotImplemented -> {
-            if (print) println("Day $day part $part: Is not implemented yet")
+            if (print) println("Year $year day $day part $part: Is not implemented yet")
         }
 
         is RunSafeResult.Exception -> throw this.exception
     }
 }
 
-fun <T, R> T.testSafe(day: Int, part: Int, print: Boolean, expected: Int? = null, code: T.() -> R) {
+fun <T, R> T.testSafe(year: Int, day: Int, part: Int, print: Boolean, expected: Int? = null, code: T.() -> R) {
     val result = runSafe(code)
-    result.handle(day, part, print, expected)
+    result.handle(year, day, part, print, expected)
 }
 

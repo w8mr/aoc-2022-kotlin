@@ -15,21 +15,21 @@ internal class Day00Test {
 
     @Test
     fun testPart1TestInput() {
-        subject.testSafe(day, 1, false) { part1(testInput) }
+        subject.testSafe(year, day, 1, false) { part1(testInput) }
     }
 
     @Test
     fun testPart1RealInput() {
-        subject.testSafe(day, 1, true) { part1(input) }
+        subject.testSafe(year, day, 1, true) { part1(input) }
     }
 
     @Test
     fun testPart2TestInput() {
-        subject.testSafe(day, 2, false) { part2(testInput) }
+        subject.testSafe(year, day, 2, false) { part2(testInput) }
     }
 
     @Test
     fun testPart2RealInput() {
-        subject.testSafe(day, 2, true) { part2(input) }
+        subject.testSafe(year, day, 2, true) { part2(input) }
     }
 }
