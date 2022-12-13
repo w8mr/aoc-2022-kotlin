@@ -3,9 +3,43 @@ package aoc2022
 import aoc.*
 import java.lang.IllegalStateException
 
-sealed interface ElementOrList {
-    class E(val value: Int) : ElementOrList
-    class L(val list: List<ElementOrList>) : ElementOrList
+sealed class ElementOrList : Comparable<ElementOrList> {
+
+
+    class E(val value: Int) : ElementOrList()
+    class L(val list: List<ElementOrList>) : ElementOrList()
+
+    override fun compareTo(other: ElementOrList): Int {
+        return when {
+            this is E && other is E -> {
+                when {
+                    value == other.value -> 0
+                    value < other.value -> -1
+                    else -> 1
+                }
+            }
+
+            this is L && other is E ->
+                compareTo(L(listOf(other)))
+
+            this is E && other is L ->
+                L(listOf(this)).compareTo(other)
+
+            this is L && other is L -> {
+                val notEqual: Int? = list.zip(other.list).map { (f, s) -> f.compareTo(s) }.find { it != 0 }
+                when {
+                    notEqual != null -> notEqual
+                    else -> when {
+                        list.size == other.list.size -> 0
+                        list.size < other.list.size -> -1
+                        else -> 1
+                    }
+                }
+            }
+
+            else -> throw IllegalStateException()
+        }
+    }
 }
 
 val element = number() map ElementOrList::E
@@ -14,52 +48,25 @@ val pair = seq(list + "\n", list + "\n")
 val pairs = pair sepBy "\n"
 
 
-
 fun main() {
-
-    fun compare(input: Pair<ElementOrList, ElementOrList>): Int {
-        val (first, second) = input
-        return when {
-            first is ElementOrList.E && second is ElementOrList.E -> {
-                when {
-                    first.value == second.value -> 0
-                    first.value < second.value -> -1
-                    else -> 1
-                }
-            }
-
-            first is ElementOrList.L && second is ElementOrList.E ->
-                compare(first to ElementOrList.L(listOf(second)))
-
-            first is ElementOrList.E && second is ElementOrList.L ->
-                compare(ElementOrList.L(listOf(first)) to second)
-
-            first is ElementOrList.L && second is ElementOrList.L -> {
-                val notEqual = first.list.zip(second.list).map { compare(it) }.find { it != 0 }
-                when {
-                    notEqual != null -> notEqual
-                    else -> when {
-                        first.list.size == second.list.size -> 0
-                        first.list.size < second.list.size -> -1
-                        else -> 1
-                    }
-                }
-            }
-
-            else -> throw IllegalStateException()
-        }
-
-    }
 
     fun part1(input: String): Int {
         val p = pairs.parse(input)
-        val r = p.map(::compare)
+        val r = p.map { (f, s) -> f.compareTo(s)}
 
         return r.withIndex().filter { (_, v) -> v <= 0}.sumOf { (i, _) -> i+1}
     }
 
     fun part2(input: String): Int {
-        return TODO()
+        val p = pairs.parse(input).flatMap { it.toList() }
+        val marker1 = ElementOrList.L(listOf(ElementOrList.E(2)))
+        val marker2 = ElementOrList.L(listOf(ElementOrList.E(6)))
+        val n = p + listOf(marker1, marker2)
+
+        val set = n.toSortedSet()
+        val i1 = set.indexOf(marker1) + 1
+        val i2 = set.indexOf(marker2) + 1
+        return i1 * i2
     }
     // test if implementation meets criteria from the description, like:/
     val testInput = readFile(2022, 13, 1).readText()
@@ -67,12 +74,11 @@ fun main() {
     check(part1(testInput) == 13)
 
     println(part1(input))
-    check(part1(input) == TODO())
+    check(part1(input) == 5350)
 
-    check(part2(testInput) == TODO())
+    check(part2(testInput) == 140)
 
     println(part2(input))
-    check(part2(input) == TODO())
-
+    check(part2(input) == 19570)
 }
 
