@@ -69,7 +69,7 @@ fun main() {
     fun <T> findShortestPath(dag: GraphNode<T>, predicate: (GraphNode<T>) -> Boolean): Int? {
         val shortestPaths = mutableMapOf<GraphNode<T>, Pair<Int, GraphNode<T>?>>()
         val toInspect =
-            PriorityQueue<GraphNode<T>>({ n1, n2 -> shortestPaths[n1]!!.first - shortestPaths[n2]!!.first })
+            PriorityQueue<GraphNode<T>> { n1, n2 -> shortestPaths[n1]!!.first - shortestPaths[n2]!!.first }
         val inspected = mutableSetOf<GraphNode<T>>()
         shortestPaths[dag] = 0 to null
         toInspect.add(dag)
