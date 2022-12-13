@@ -45,6 +45,9 @@ fun <R, T> Parser<R>.to(value: T) =
 infix fun <R, T> Parser<R>.asValue(value: T) = this.to(value)
 infix fun <T> String.asValue(value: T) = Literal(this) asValue value
 
+inline fun <reified R> Parser<List<R>>.asArray() = this map { it.toTypedArray() }
+
+
 operator fun <T> Parser<T>.plus(literal: String) =
     seq(this, Literal(literal)) { v, _ -> v }
 
