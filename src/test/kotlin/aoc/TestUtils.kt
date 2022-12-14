@@ -36,7 +36,7 @@ private fun RunSafeResult.handle(year: Int, day: Int, part: Int, print: Boolean,
     }
 }
 
-fun <T, R> T.testSafe(year: Int, day: Int, part: Int, print: Boolean, expected: Int? = null, code: T.() -> R) {
+fun <T, R> T.testSafe(year: Int, day: Int, part: Int, print: Boolean, expected: Any? = null, code: T.() -> R) {
     val result = runSafe(code)
     result.handle(year, day, part, print, expected)
 }
