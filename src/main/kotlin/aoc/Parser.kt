@@ -133,23 +133,38 @@ fun <R1, R2, R3, R4, R5, R6, T> seq(p1: Parser<R1>, p2: Parser<R2>, p3: Parser<R
     return seq(seq(p1, p2), seq(p3, p4), seq(p5, p6) { v5, v6 -> Pair(v5, v6) }) { (v1, v2), (v3, v4), (v5, v6) -> map(v1, v2, v3, v4, v5, v6) }
 }
 
-sealed interface OrResult<out L, out R> {
-    data class Left<L>(val value: L) : OrResult<L, Nothing>
-    data class Right<R>(val value: R) : OrResult<Nothing, R>
-}
-
 class OneOf<R>(private vararg val parsers: Parser<out R>): Parser<R>() {
     override fun apply(context: Context): Result<R> {
         for (parser in parsers) {
+            val cur = context.index
             when (val result = parser.apply(context)) {
                 is Success -> return context.success(result.value, 0)
-                else -> {}
+                else -> context.index = cur
             }
         }
         return context.error("aoc.OneOf has no match")
     }
 }
 
+fun <R> oneOf(vararg parsers: Parser<out R>) = object: Parser<R>() {
+    override fun apply(context: Context): Result<R> {
+        for (parser in parsers) {
+            val cur = context.index
+            when (val result = parser.apply(context)) {
+                is Success -> return context.success(result.value, 0)
+                else -> context.index = cur
+            }
+        }
+        return context.error("oneOf has no match")
+    }
+}
+
+infix fun <L> Parser<out L>.or(other: Parser<out L>): Parser<L> = oneOf(this, other)
+
+sealed interface OrResult<out L, out R> {
+    data class Left<L>(val value: L) : OrResult<L, Nothing>
+    data class Right<R>(val value: R) : OrResult<Nothing, R>
+}
 class Or<L,R>(private val p1: Parser<L>, private val p2: Parser<R>): Parser<OrResult<L, R>>() {
     override fun apply(context: Context): Result<OrResult<L, R>> =
         when (val r1 = p1.apply(context)) {
@@ -161,8 +176,6 @@ class Or<L,R>(private val p1: Parser<L>, private val p2: Parser<R>): Parser<OrRe
                 }
         }
 }
-
-infix fun <L> Parser<out L>.or(other: Parser<out L>): Parser<L> = OneOf(this, other)
 
 infix fun <L,R> Parser<L>.or_(other: Parser<R>): Parser<OrResult<L, R>> = Or(this, other)
 
@@ -189,8 +202,8 @@ fun <R> ref(parserRef: KProperty0<Parser<R>>): Parser<R> = object : Parser<R>() 
 
 infix fun <R> String.followedBy(parser: Parser<R>): Parser<R> = seq(Literal(this), parser) { _, n -> n }
 
-fun number() = Map(Regex("-?\\d+")) { it.toInt() }
-fun digit() = Map(Regex("\\d")) { it.toInt() }
+fun number() = Regex("-?\\d+") map { it.toInt() }
+fun digit() = Regex("\\d") map { it.toInt() }
 
 fun <R> optional(p: Parser<R>) : Parser<R?> =
     Map(Or(p, Empty())) { o ->
@@ -199,5 +212,6 @@ fun <R> optional(p: Parser<R>) : Parser<R?> =
             is OrResult.Right -> null
         }
     }
-fun <R> endNLorEoF(parser: Parser<R>): Parser<R> = seq(parser, Or(Literal("\n"), EoF())) { value, _ -> value }
+fun <R> endNLorEoF(parser: Parser<R>): Parser<R> = seq(parser, Literal("\n") or EoF()) { value, _ -> value } //TODO: Check if can be done otherwise
+
 

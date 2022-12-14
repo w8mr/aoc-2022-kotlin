@@ -44,31 +44,31 @@ class Day02() {
     }
 
     fun part1(input: String): Int {
-        val parser1 = zeroOrMore(seq(col1+" ", col2_part1+"\n") { c1, c2 -> Pair(c1, c2) })
-        val parsed = parser1.parse(input)
+        val parser = zeroOrMore(seq(col1+" ", col2_part1+"\n"))
+        val parsed = parser.parse(input)
         return parsed.map { score[it] ?: 0 }.sum()
     }
 
     fun part2(input: String): Int {
-        val parser2 = zeroOrMore(seq(col1+" ", col2_part2+"\n") { c1, c2 -> Pair(c1, c2) })
-        val parsed = parser2.parse(input)
+        val parser = zeroOrMore(seq(col1+" ", col2_part2+"\n"))
+        val parsed = parser.parse(input)
         return parsed.map(::scores2).sum()
     }
 
-    val col1 = OneOf(
-        Literal("A").to(Item.ROCK),
-        Literal("B").to(Item.PAPER),
-        Literal("C").to(Item.SCISSOR)
+    val col1 = oneOf(
+        "A" asValue Item.ROCK,
+        "B" asValue Item.PAPER,
+        "C" asValue Item.SCISSOR
     )
-    val col2_part1 = OneOf(
-        Literal("X").to(Item.ROCK),
-        Literal("Y").to(Item.PAPER),
-        Literal("Z").to(Item.SCISSOR)
+    val col2_part1 = oneOf(
+        "X" asValue Item.ROCK,
+        "Y" asValue Item.PAPER,
+        "Z" asValue Item.SCISSOR
     )
 
-    val col2_part2 = OneOf(
-        Literal("X").to(Result.LOSE),
-        Literal("Y").to(Result.DRAW),
-        Literal("Z").to(Result.WIN)
+    val col2_part2 = oneOf(
+        "X" asValue Result.LOSE,
+        "Y" asValue Result.DRAW,
+        "Z" asValue Result.WIN
     )
 }
