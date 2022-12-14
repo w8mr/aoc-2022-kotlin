@@ -10,8 +10,8 @@ class Day14 {
         fun build(): MutableMap<Int, TreeSet<Int>> {
             val map = mutableMapOf<Int, TreeSet<Int>>()
             ls.forEach { (start, end) ->
-                (start.x.coerceAtMost(end.x)..start.x.coerceAtLeast(end.x)).forEach { x ->
-                    (start.y.coerceAtMost(end.y)..start.y.coerceAtLeast(end.y)).forEach { y ->
+                (minOf(start.x, end.x)..maxOf(start.x, end.x)).forEach { x ->
+                    (minOf(start.y, end.y)..maxOf(start.y, end.y)).forEach { y ->
                         insert(map, x, y)
                     }
                 }
@@ -95,7 +95,7 @@ class Day14 {
 
     fun part2(input: String): Int {
         val lines = lines.parse(input)
-        val lowestY = lines.fold(0) { acc, (start, end) -> acc.coerceAtLeast(start.y.coerceAtLeast(end.y)) }
+        val lowestY = lines.fold(0) { acc, (start, end) -> maxOf(acc, start.y, end.y) }
         val bottomY = lowestY + 2
         val linesWithBottom = lines + listOf(Line(Coord(499-bottomY, bottomY), Coord(501+bottomY, bottomY)))
         return solve(linesWithBottom)
