@@ -4,9 +4,8 @@ import aoc.*
 
 class Day01() {
 
-    val calories = endNLorEoF(number())
-    val elf = endNLorEoF(zeroOrMore(calories))
-    val elfs = zeroOrMore(elf)
+    val elf = number() sepBy "\n"
+    val elfs = elf sepBy "\n"
 
     fun sumCaloriesByElf(input: List<List<Int>>) =
         input.map { it.sum() }

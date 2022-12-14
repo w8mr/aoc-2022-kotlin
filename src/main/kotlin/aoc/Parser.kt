@@ -201,6 +201,7 @@ fun <R> ref(parserRef: KProperty0<Parser<R>>): Parser<R> = object : Parser<R>() 
 }
 
 infix fun <R> String.followedBy(parser: Parser<R>): Parser<R> = seq(Literal(this), parser) { _, n -> n }
+infix fun <R> Parser<R>.followedBy(literal: String): Parser<R> = seq(this, Literal(literal)) { n, _ -> n }
 
 fun number() = Regex("-?\\d+") map { it.toInt() }
 fun digit() = Regex("\\d") map { it.toInt() }
@@ -212,6 +213,3 @@ fun <R> optional(p: Parser<R>) : Parser<R?> =
             is OrResult.Right -> null
         }
     }
-fun <R> endNLorEoF(parser: Parser<R>): Parser<R> = seq(parser, Literal("\n") or EoF()) { value, _ -> value } //TODO: Check if can be done otherwise
-
-
