@@ -2,19 +2,18 @@ package aoc2022
 
 import aoc.*
 
-enum class Item {
-    ROCK,
-    PAPER,
-    SCISSOR
-}
+class Day02() {
+    enum class Item {
+        ROCK,
+        PAPER,
+        SCISSOR
+    }
 
-enum class Result {
-    LOSE,
-    DRAW,
-    WIN
-}
-
-fun main() {
+    enum class Result {
+        LOSE,
+        DRAW,
+        WIN
+    }
     val score = mapOf(
         Pair(Pair(Item.ROCK, Item.ROCK), 3 + 1),
         Pair(Pair(Item.ROCK, Item.PAPER), 6 + 2),
@@ -44,12 +43,16 @@ fun main() {
         return score[Pair(input.first, i2)] ?: 0
     }
 
-    fun part1(input: List<Pair<Item, Item>>): Int {
-        return input.map { score[it] ?: 0 }.sum()
+    fun part1(input: String): Int {
+        val parser1 = zeroOrMore(seq(col1+" ", col2_part1+"\n") { c1, c2 -> Pair(c1, c2) })
+        val parsed = parser1.parse(input)
+        return parsed.map { score[it] ?: 0 }.sum()
     }
 
-    fun part2(input: List<Pair<Item, Result>>): Int {
-        return input.map(::scores2).sum()
+    fun part2(input: String): Int {
+        val parser2 = zeroOrMore(seq(col1+" ", col2_part2+"\n") { c1, c2 -> Pair(c1, c2) })
+        val parsed = parser2.parse(input)
+        return parsed.map(::scores2).sum()
     }
 
     val col1 = OneOf(
@@ -68,17 +71,4 @@ fun main() {
         Literal("Y").to(Result.DRAW),
         Literal("Z").to(Result.WIN)
     )
-
-    val parser1 = zeroOrMore(seq(col1+" ", col2_part1+"\n") { c1, c2 -> Pair(c1, c2) })
-    val parser2 = zeroOrMore(seq(col1+" ", col2_part2+"\n") { c1, c2 -> Pair(c1, c2) })
-    // test if implementation meets criteria from the description, like:
-    val testInput1 = parser1.parse(readFile(2022, 2, 1).readText())
-    val testInput2 = parser2.parse(readFile(2022, 2, 1).readText())
-    check(part1(testInput1) == 15)
-    check(part2(testInput2) == 12)
-
-    val input1 = parser1.parse(readFile(2022, 2).readText())
-    println(part1(input1))
-    val input2 = parser2.parse(readFile(2022, 2).readText())
-    println(part2(input2))
 }
