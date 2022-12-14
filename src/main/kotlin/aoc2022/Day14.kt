@@ -39,14 +39,8 @@ class Day14 {
 
         private fun insert(x: Int, y: Int) = insert(blocked, x,y )
 
-        private fun findIntersect(x: Int, y: Int): Int? {
-            val set = blocked[x]
-            return if (set == null) {
-                null
-            } else {
-                set.asSequence().dropWhile { i -> i < y }.firstOrNull()
-            }
-        }
+        private fun findIntersect(x: Int, y: Int): Int? =
+            blocked[x]?.asSequence()?.dropWhile { i -> i < y }?.firstOrNull()
 
         fun simulateSandDrop(): Boolean {
             var x = 500
