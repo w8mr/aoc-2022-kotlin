@@ -59,7 +59,6 @@ class Day14 {
                     if (y == findIntersect(x - 1, y)) {
                         if (y == findIntersect(x + 1, y)) {
                             insert(x, y - 1)
-                     //       println("drop on $x,${y-1}")
                             return true
                         } else {
                             x++
@@ -97,7 +96,6 @@ class Day14 {
     fun part2(input: String): Int {
         val lines = lines.parse(input)
         val lowestY = lines.fold(0) { acc, (start, end) -> acc.coerceAtLeast(start.y.coerceAtLeast(end.y)) }
-        println(lowestY)
         val bottomY = lowestY + 2
         val linesWithBottom = lines + listOf(Line(Coord(499-bottomY, bottomY), Coord(501+bottomY, bottomY)))
         return solve(linesWithBottom)
