@@ -1,4 +1,4 @@
-package aoc2015
+package aoc.aoc2015
 
 import aoc.*
 
