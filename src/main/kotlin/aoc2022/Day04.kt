@@ -2,7 +2,7 @@ package aoc2022
 
 import aoc.*
 
-fun main() {
+class Day04() {
     data class Zone(val start: Int, val end: Int) {
         operator fun contains(other: Zone): Boolean =
             other.start >= this.start &&
@@ -16,8 +16,8 @@ fun main() {
 
     }
 
-    val zone = seq(number()+"-", number()) { s, e -> Zone(s,e) }
-    val pair = seq(zone+",", zone+"\n") { e1, e2 -> Pair(e1, e2) }
+    val zone = seq(number() followedBy "-", number(), ::Zone)
+    val pair = seq(zone followedBy ",", zone followedBy "\n")
     val pairs = zeroOrMore(pair)
 
     fun part1(input: String): Int {
@@ -27,16 +27,5 @@ fun main() {
     fun part2(input: String): Int {
         return pairs.parse(input).map { (e1, e2) -> e1 overlap e2 }.count { it }
     }
-    // test if implementation meets criteria from the description, like:
-    val testInput = readFile(2022, 4, 1).readText()
-    check(part1(testInput) == 2)
-    check(part2(testInput) == 4)
-
-    val input = readFile(2022, 4).readText()
-
-    check(part1(input) == 503)
-    check(part2(input) == 827)
-    println(part1(input))
-    println(part2(input))
 }
 
