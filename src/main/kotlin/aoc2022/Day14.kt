@@ -3,7 +3,7 @@ package aoc2022
 import aoc.*
 import java.util.*
 
-class Day14() {
+class Day14 {
     data class Line(val start: Coord, val end: Coord)
 
     class State(val ls: List<Line>) {
@@ -37,9 +37,9 @@ class Day14() {
             }
         }
 
-        fun insert(x: Int, y: Int) = insert(blocked, x,y )
+        private fun insert(x: Int, y: Int) = insert(blocked, x,y )
 
-        fun findIntersect(x: Int, y: Int): Int? {
+        private fun findIntersect(x: Int, y: Int): Int? {
             val set = blocked[x]
             return if (set == null) {
                 null
@@ -53,7 +53,7 @@ class Day14() {
             var y: Int? = 0
             while (true) {
                 y = findIntersect(x, y!!)
-                if (y == null) {
+                if ((y == null) || (y == 0 && x ==500)){
                     return false
                 } else {
                     if (y == findIntersect(x - 1, y)) {
@@ -79,8 +79,7 @@ class Day14() {
     val line = (coord sepBy " -> ") + "\n" map ::createLine
     val lines = zeroOrMore(line) map { it.flatten() }
 
-    fun part1(input: String): Int {
-        val lines = lines.parse(input)
+    private fun solve(lines: List<Line>): Int {
         val state = State(lines)
         var count = -1
         do {
@@ -90,8 +89,18 @@ class Day14() {
         return count
     }
 
+    fun part1(input: String): Int {
+        val lines = lines.parse(input)
+        return solve(lines)
+    }
+
     fun part2(input: String): Int {
-        return TODO()
+        val lines = lines.parse(input)
+        val lowestY = lines.fold(0) { acc, (start, end) -> acc.coerceAtLeast(start.y.coerceAtLeast(end.y)) }
+        println(lowestY)
+        val bottomY = lowestY + 2
+        val linesWithBottom = lines + listOf(Line(Coord(499-bottomY, bottomY), Coord(501+bottomY, bottomY)))
+        return solve(linesWithBottom)
     }
 }
 
