@@ -25,6 +25,17 @@ class Regex(private val pattern: String): Parser<String>() {
     }
 }
 
+fun regex(pattern: String) = object: Parser<String>() {
+    override fun apply(context: Context): Result<String> {
+        if (context.index > context.source.length) return context.error("End of File")
+        val result = "^$pattern".toRegex().find(context.source.subSequence(context.index, context.source.length))
+        return when (result) {
+            null -> context.error("aoc.Regex not matched")
+            else -> context.success(result.value, result.value.length)
+        }
+    }
+}
+
 abstract class Parser<R> {
     sealed interface Result<R>
     data class Success<R>(val value: R) : Result<R>
@@ -40,7 +51,7 @@ abstract class Parser<R> {
 }
 
 fun <R, T> Parser<R>.to(value: T) =
-    Map(this) { value }
+    this map { value }
 
 infix fun <R, T> Parser<R>.asValue(value: T) = this.to(value)
 infix fun <T> String.asValue(value: T) = Literal(this) asValue value
@@ -63,14 +74,6 @@ class Literal(private val literal: String): Parser<String>() {
             false -> context.error("$literal not found")
         }
     }
-}
-
-class Map<R, T>(private val parser: Parser<R>, private val map: (value: R) -> T): Parser<T>() {
-    override fun apply(context: Context): Result<T> =
-        when (val result = parser.apply(context)) {
-            is Success -> context.success(this.map(result.value), 0)
-            is Error -> context.error(result.error)
-        }
 }
 
 infix fun <R,T> Parser<R>.map(map: (value: R) -> T): Parser<T> {
@@ -207,7 +210,7 @@ fun number() = Regex("-?\\d+") map { it.toInt() }
 fun digit() = Regex("\\d") map { it.toInt() }
 
 fun <R> optional(p: Parser<R>) : Parser<R?> =
-    Map(Or(p, Empty())) { o ->
+    Or(p, Empty()) map { o ->
         when (o) {
             is OrResult.Left -> o.value
             is OrResult.Right -> null
