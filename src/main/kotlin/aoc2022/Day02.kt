@@ -44,13 +44,13 @@ class Day02() {
     }
 
     fun part1(input: String): Int {
-        val parser = zeroOrMore(seq(col1+" ", col2_part1+"\n"))
+        val parser = zeroOrMore(seq(col1 followedBy " ", col2_part1 followedBy "\n"))
         val parsed = parser.parse(input)
         return parsed.map { score[it] ?: 0 }.sum()
     }
 
     fun part2(input: String): Int {
-        val parser = zeroOrMore(seq(col1+" ", col2_part2+"\n"))
+        val parser = zeroOrMore(seq(col1 followedBy " ", col2_part2 followedBy "\n"))
         val parsed = parser.parse(input)
         return parsed.map(::scores2).sum()
     }
