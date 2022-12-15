@@ -5,7 +5,7 @@ import kotlin.reflect.KProperty0
 
 class Context(val source: CharSequence, var index: Int = 0) {
     fun <R> error(message: String = "Unknown"): Parser.Result<R> {
-        return Parser.Error(message)
+        return Parser.Error("$message at position $index (${source.subSequence(index, index+minOf(source.length - index, 15))})")
     }
 
     fun <R> success(value: R, length: Int): Parser.Result<R> {
@@ -139,10 +139,9 @@ fun <R1, R2, R3, R4, R5, R6, T> seq(p1: Parser<R1>, p2: Parser<R2>, p3: Parser<R
 class OneOf<R>(private vararg val parsers: Parser<out R>): Parser<R>() {
     override fun apply(context: Context): Result<R> {
         for (parser in parsers) {
-            val cur = context.index
             when (val result = parser.apply(context)) {
                 is Success -> return context.success(result.value, 0)
-                else -> context.index = cur
+                else -> {}
             }
         }
         return context.error("aoc.OneOf has no match")

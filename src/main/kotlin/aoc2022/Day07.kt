@@ -2,33 +2,35 @@ package aoc2022
 
 import aoc.*
 
-sealed interface Node {
-    val size: Int
-    val subNodes: List<Node>
-}
 
-data class FileNode(override val size: Int, val name: String): Node {
-    override val subNodes: List<Node>
-        get() = emptyList()
-}
+class Day07() {
+    sealed interface Node {
+        val size: Int
+        val subNodes: List<Node>
+    }
 
-data class DirNode(val name: String, override val subNodes: List<Node> = emptyList()): Node {
-    override val size: Int
-        get() = subNodes.sumOf { it.size }
-}
+    data class FileNode(override val size: Int, val name: String): Node {
+        override val subNodes: List<Node>
+            get() = emptyList()
+    }
 
-val fileEntry = seq(number(), Literal(" "), Regex("[a-zA-Z./]+"), Literal("\n")) { size, _, n, _ -> FileNode(size, n) }
-val dirEntry = seq(Literal("dir "), Regex("[a-zA-Z./]+"), Literal("\n")) { _, n, _ -> DirNode(n) }
-val fileDirEntry = seq(zeroOrMore(dirEntry), fileEntry, zeroOrMore(dirEntry)) { _, e, _ -> e}
-val entry = OneOf(fileDirEntry, ref(::dirListing))
-val entries = zeroOrMore(entry)
-val dirListing: Parser<Node> = seq(Literal("\$ cd "),
-    Regex("[a-zA-Z/]+"),
-    Literal("\n\$ ls\n"),
-    entries,
-    Or(Literal("\$ cd ..\n"), EoF())) { _, n, _, e, _ -> DirNode(n, e) }
+    data class DirNode(val name: String, override val subNodes: List<Node> = emptyList()): Node {
+        override val size: Int
+            get() = subNodes.sumOf { it.size }
+    }
 
-fun main() {
+    val fileEntry = seq(number(), Literal(" "), Regex("[a-zA-Z./]+"), Literal("\n")) { size, _, n, _ -> FileNode(size, n) }
+    val dirEntry = seq(Literal("dir "), Regex("[a-zA-Z./]+"), Literal("\n")) { _, n, _ -> DirNode(n) }
+    val fileDirEntry = seq(zeroOrMore(dirEntry), fileEntry, zeroOrMore(dirEntry)) { _, e, _ -> e}
+    val entry = OneOf(fileDirEntry, ref(::dirListing))
+    val entries = zeroOrMore(entry)
+    val dirListing: Parser<Node> = seq(Literal("\$ cd "),
+        Regex("[a-zA-Z/]+"),
+        Literal("\n\$ ls\n"),
+        entries,
+        Or(Literal("\$ cd ..\n"), EoF())) { _, n, _, e, _ -> DirNode(n, e) }
+
+
     fun part1(input: String): Int {
         val tree = dirListing.parse(input)
         val r = foldTree(tree, Node::subNodes, 0) { acc, node ->
@@ -45,17 +47,6 @@ fun main() {
         }
         return r?.size ?: 0
     }
-
-    val testInput = readFile(2022, 7, 1).readText()
-    check(part1(testInput) == 95437)
-    check(part2(testInput) == 24933642)
-
-    val input = readFile(2022, 7).readText()
-    check(part1(input) == 1428881)
-    check(part2(input) == 10475598)
-    println(part1(input))
-    println(part2(input))
-
 }
 
 
