@@ -59,6 +59,22 @@ fun <R, T> foldTree(tree: R, subNodes: (R) -> List<R>, init: T, f: (T, R) -> T):
     return go(tree, init, f)
 }
 
+fun IntRange.union(other: IntRange) = union(listOf(this, other))
+
+fun union(r: List<IntRange>): List<IntRange> {
+    val sorted = r.sortedBy { it.start }
+    val merged =
+        sorted.fold(Pair(listOf<IntRange>(), sorted[0])) { (list: List<IntRange>, cur: IntRange), range: IntRange ->
+            when (range.first) {
+                in cur -> Pair(list, cur.first..maxOf(range.last, cur.last))
+                else -> Pair(list + listOf(cur), range)
+            }
+        }
+    return merged.first + listOf(merged.second)
+}
+
+
+
 
 
 

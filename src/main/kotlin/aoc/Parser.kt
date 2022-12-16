@@ -87,7 +87,7 @@ infix fun <R,T> Parser<R>.map(map: (value: R) -> T): Parser<T> {
     }
 }
 
-infix fun <R> Parser<R>.sepBy(separator: String, ) = zeroOrMore(seq(this, optional(Literal(separator))) { n, _ -> n })
+infix fun <R> Parser<R>.sepBy(separator: String, ) = zeroOrMore(seq(this, optional(Literal(separator)), ::first))
 
 fun <R> zeroOrMore(parser: Parser<R>) = object: Parser<List<R>>() {
     override fun apply(context: Context): Result<List<R>> {
@@ -202,8 +202,8 @@ fun <R> ref(parserRef: KProperty0<Parser<R>>): Parser<R> = object : Parser<R>() 
 
 }
 
-infix fun <R> String.followedBy(parser: Parser<R>): Parser<R> = seq(Literal(this), parser) { _, n -> n }
-infix fun <R> Parser<R>.followedBy(literal: String): Parser<R> = seq(this, Literal(literal)) { n, _ -> n }
+infix fun <R> String.followedBy(parser: Parser<R>): Parser<R> = seq(Literal(this), parser, ::second)
+infix fun <R> Parser<R>.followedBy(literal: String): Parser<R> = seq(this, Literal(literal), ::first)
 
 fun number() = Regex("-?\\d+") map { it.toInt() }
 fun digit() = Regex("\\d") map { it.toInt() }
@@ -215,3 +215,6 @@ fun <R> optional(p: Parser<R>) : Parser<R?> =
             is OrResult.Right -> null
         }
     }
+
+fun <T, R> second(ignore: T, second: R) = second
+fun <T, R> first(first: T, ignore: R) = first
