@@ -39,10 +39,11 @@ fun <T> Grid<T>.find(predicate: (T)  -> Boolean): Coord? {
 typealias Grid<T> = Array<Array<T>>
 interface GraphNode<T> {
     val neighbours: List<Pair<Int, GraphNode<T>>>
+    val value: T
 }
 data class GridBackedGraphNode<T>(private val gridBack: GridBack<T>, private val coord: Coord) : GraphNode<T> {
     override val neighbours by lazy { gridBack.neighbourNodes(gridBack, coord) }
-    val value by lazy { gridBack.grid.fromCoord(coord) }
+    override val value: T by lazy { gridBack.grid.fromCoord(coord)!! }
 }
 
 class GridBack<T>(val grid: Grid<T>, val neighbourNodes: (GridBack<T>, Coord) -> List<Pair<Int, GraphNode<T>>>)
