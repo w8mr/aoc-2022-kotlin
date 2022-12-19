@@ -37,10 +37,6 @@ fun <T> Grid<T>.find(predicate: (T)  -> Boolean): Coord? {
 }
 
 typealias Grid<T> = Array<Array<T>>
-interface GraphNode<T> {
-    val neighbours: List<Pair<Int, GraphNode<T>>>
-    val value: T
-}
 data class GridBackedGraphNode<T>(private val gridBack: GridBack<T>, private val coord: Coord) : GraphNode<T> {
     override val neighbours by lazy { gridBack.neighbourNodes(gridBack, coord) }
     override val value: T by lazy { gridBack.grid.fromCoord(coord)!! }
@@ -66,34 +62,6 @@ fun main() {
         (zeroOrMore(
             (Regex("[a-zSE]") map(::elevation))) + "\n").asArray()
     ).asArray()
-
-    fun <T> findShortestPath(dag: GraphNode<T>, predicate: (GraphNode<T>) -> Boolean): Int? {
-        val shortestPaths = mutableMapOf<GraphNode<T>, Pair<Int, GraphNode<T>?>>()
-        val toInspect =
-            PriorityQueue<GraphNode<T>> { n1, n2 -> shortestPaths[n1]!!.first - shortestPaths[n2]!!.first }
-        val inspected = mutableSetOf<GraphNode<T>>()
-        shortestPaths[dag] = 0 to null
-        toInspect.add(dag)
-        while (toInspect.isNotEmpty()) {
-            val node = toInspect.remove()
-            val pathLength = shortestPaths[node]!!.first
-            node.neighbours.forEach() { (weight, neighbour) ->
-                if (!inspected.contains(neighbour)) {
-                    val newLength = pathLength + weight
-                    if (newLength < (shortestPaths[neighbour]?.first ?: Int.MAX_VALUE)) {
-                        shortestPaths[neighbour] = newLength to node
-                        toInspect.remove(neighbour)
-                        toInspect.add(neighbour)
-                    }
-                }
-            }
-            inspected.add(node)
-        }
-
-        val key = shortestPaths.keys.find(predicate)
-
-        return shortestPaths[key]?.first
-    }
 
     fun part1(input: String): Int {
         val grid = parser.parse(input)
