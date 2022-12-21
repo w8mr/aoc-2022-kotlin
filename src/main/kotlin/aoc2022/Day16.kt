@@ -68,6 +68,7 @@ class Day16() {
 
         val startNode = MapValvesBackedGraphNode(startValve, mapValves)
         val openableValves = parsed.filter { it.flowRate > 0 }.map { MapValvesBackedGraphNode(it, mapValves) }.toSet()
+   //     println(openableValves)
         return Pair(startNode, openableValves)
     }
 
@@ -79,7 +80,7 @@ class Day16() {
                 val addedPressure = newTimeLeft * it.value.flowRate
                 val newOpenableValves = openableValves - setOf(it)
                 if (newOpenableValves.isEmpty() || (newTimeLeft <= 0)) {
-                        listOf(listOf(node.value) to addedPressure)
+                        listOf(listOf(it.value) to addedPressure)
                 } else {
                     val recusive = calcPressure(newTimeLeft, it, newOpenableValves)
                     recusive.map { (parents, pressure) ->
@@ -93,7 +94,109 @@ class Day16() {
     }
 
     fun part2(input: String): Int {
+        val (graph, openableValves) = setup(input)
+        val pressure = calcPressure2(26, 26, graph, graph, openableValves).sortedByDescending { it.first }
+
+        //pressure.filter{ it.first.map { it.valve.name}.equals(listOf("JJ","BB","CC")) && it.second.map { it.valve.name}.equals(listOf("DD","HH","EE"))}.map{ it.toList().sumOf { it.sumOf{ it.added()} } to it.toList().map{ it.map { it to it.added()} }}.forEach(::println)
+        pressure.take(50).map{ it.first to listOf(it.second, it.third).map{ it.map { it to it.added()} }}.forEach(::println)
+
+
+        //println (pressure.take(1).single().first.first.map{ MapValvesBackedGraphNode(it, }.scan(0 to graph) { (_, n1), n2 -> n1.shortestPaths[n2]!! to n2})
         return TODO()
     }
 
+
+    data class Pressure(val valve: Valve, val timeLeft: Int) {
+        fun added() = this.timeLeft * this.valve.flowRate
+
+    }
+    fun calcPressure2(
+        timeLeftYou: Int,
+        timeLeftElephant: Int,
+        nodeYou: GraphNode<Valve>,
+        nodeElephant: GraphNode<Valve>,
+        openableValves: Set<GraphNode<Valve>>
+    ): List<Triple<Int, List<Pressure>, List<Pressure>>> {
+        return openableValves.flatMap { goto ->
+                you(nodeYou, goto, timeLeftYou, openableValves, timeLeftElephant, nodeElephant) +
+                elephant(nodeElephant, goto, timeLeftElephant, openableValves, timeLeftYou, nodeYou)
+        }
+    }
+
+    private fun you(
+        nodeYou: GraphNode<Valve>,
+        goto: GraphNode<Valve>,
+        timeLeftYou: Int,
+        openableValves: Set<GraphNode<Valve>>,
+        timeLeftElephant: Int,
+        nodeElephant: GraphNode<Valve>
+    ) = if (nodeYou is MapValvesBackedGraphNode) {
+        val distance = nodeYou.shortestPaths.getValue(goto)
+        val newTimeLeft = timeLeftYou - distance - 1
+        val addedPressure = Pressure(goto.value, newTimeLeft)
+        val newOpenableValves = openableValves - setOf(goto)
+        if (newOpenableValves.isEmpty() || (newTimeLeft <= 0)) {
+            listOf(Triple(addedPressure.added(), listOf(addedPressure), listOf()))
+        } else {
+            val recusive = calcPressure2(
+                newTimeLeft,
+                timeLeftElephant,
+                goto,
+                nodeElephant,
+                newOpenableValves
+            )
+            recusive.map { (total, pressureYou, pressureElephant) ->
+                Triple(total + addedPressure.added(), listOf(addedPressure) + pressureYou, pressureElephant)
+            }
+        }
+    } else {
+        throw IllegalStateException()
+    }
+    private fun elephant(
+        nodeElephant: GraphNode<Valve>,
+        goto: GraphNode<Valve>,
+        timeLeftElephant: Int,
+        openableValves: Set<GraphNode<Valve>>,
+        timeLeftYou: Int,
+        nodeYou: GraphNode<Valve>
+    ) = if (nodeElephant is MapValvesBackedGraphNode) {
+        val distance = nodeElephant.shortestPaths.getValue(goto)
+        val newTimeLeft = timeLeftElephant - distance - 1
+        val addedPressure = Pressure(goto.value, newTimeLeft)
+        val newOpenableValves = openableValves - setOf(goto)
+        if (newOpenableValves.isEmpty() || (newTimeLeft <= 0)) {
+            listOf(Triple(addedPressure.added(), listOf(), listOf(addedPressure)))
+        } else {
+            val recusive = calcPressure2(
+                    timeLeftYou,
+                    newTimeLeft,
+                    nodeYou,
+                    goto,
+                    newOpenableValves
+                )
+            recusive.map { (total, pressureYou, pressureElephant) ->
+                Triple(total + addedPressure.added(), pressureYou, listOf(addedPressure) + pressureElephant)
+            }
+        }
+    } else {
+        throw IllegalStateException()
+    }
 }
+
+fun main() {
+    val input = readFile(2022, 16).readText()
+    Day16().part2(input)
+}
+/*
+AA -> JJ 2+1: 23*21 483
+JJ -> BB 2+1  20*13 260
+BB -> CC 1+1  18*2   36
+
+AA -> DD 1+1: 24*20 480
+DD -> EE 1+1: 22*3   66
+EE -> HH 3+1: 18*22 396
+
+                   1721
+
+
+ */
