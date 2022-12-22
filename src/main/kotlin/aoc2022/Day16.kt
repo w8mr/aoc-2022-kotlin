@@ -67,20 +67,27 @@ class Day16() {
         openableValves: Set<GraphNode<Valve>>,
         players:Int
     ): Int {
+        val distanceNodes = (setOf(node) + openableValves).toList().map{ if (it is MapValvesBackedGraphNode) it else throw IllegalStateException() }
+        val distanceMap = distanceNodes.map { distanceNodes.indexOf(it) to it.shortestPaths.mapKeys { e -> distanceNodes.indexOf(e.key) }}.toMap()
+        val distanceArray = distanceMap.filterKeys { it >= 0 }.toList().sortedBy { it.first }.map { it.second.filterKeys { it >= 0 }.toList().sortedBy { it.first }.map {it.second}.toIntArray() }
+        val countNodes = distanceNodes.size
+
         fun go(
             currentTimeLeft: Int,
-            currentNode: GraphNode<Valve>,
-            currentOpenableValves: Set<GraphNode<Valve>>,
+            currentNode: Int,
+            currentOpenableValves: Int,
             players:Int
         ): Int =
-            if (currentNode is MapValvesBackedGraphNode) {
-                maxOf(
-                    currentOpenableValves.maxOf { gotoNode ->
-                        val distance = currentNode.shortestPaths.getValue(gotoNode)
+            maxOf(
+                (1 until countNodes).maxOf { gotoNode ->
+                    if ((currentOpenableValves and (1 shl gotoNode)) == 0)
+                        0
+                    else {
+                        val distance = distanceArray[currentNode][gotoNode]
                         val newTimeLeft = currentTimeLeft - distance - 1
-                        val addedPressure = gotoNode.value.flowRate * newTimeLeft
-                        val newOpenableValves = currentOpenableValves - setOf(gotoNode)
-                        if (newOpenableValves.isEmpty() || (newTimeLeft <= 0)) {
+                        val addedPressure = distanceNodes[gotoNode].value.flowRate * newTimeLeft
+                        val newOpenableValves = currentOpenableValves - (1 shl gotoNode)
+                        if (newOpenableValves == 0 || (newTimeLeft <= 1)) {
                             addedPressure
                         } else {
                             go(
@@ -90,20 +97,18 @@ class Day16() {
                                 players
                             ) + addedPressure
                         }
-                    },
-                    if (players > 1)
-                            go(
-                                timeLeft,
-                                node,
-                                currentOpenableValves,
-                                players - 1
-                            )
-                    else 0
-                )
-            } else {
-                throw IllegalStateException()
-            }
+                    }
+                },
+                if (players > 1)
+                        go(
+                            timeLeft,
+                            0,
+                            currentOpenableValves,
+                            players - 1
+                        )
+                else 0
+            )
 
-        return go(timeLeft, node, openableValves, players)
+        return go(timeLeft, 0, (2 shl countNodes)-1, players)
     }
 }
