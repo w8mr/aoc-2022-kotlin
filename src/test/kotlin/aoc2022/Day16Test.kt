@@ -30,6 +30,6 @@ internal class Day16Test {
 
     @Test
     fun testPart2RealInput() {
-        subject.testSafe(year, day, 2, true) { part2(input) }
+        subject.testSafe(year, day, 2, true, 2705) { part2(input) }
     }
 }
