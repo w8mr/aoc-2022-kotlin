@@ -68,11 +68,15 @@ class Day16() {
         timeLeft: Int,
         node: GraphNode<Valve>,
         openableValves: Set<GraphNode<Valve>>,
-        players:Int
+        players: Int
     ): Int {
-        val distanceNodes = (openableValves + setOf(node)).toList().map{ if (it is MapValvesBackedGraphNode) it else throw IllegalStateException() }
-        val distanceMap = distanceNodes.map { distanceNodes.indexOf(it) to it.shortestPaths.mapKeys { e -> distanceNodes.indexOf(e.key) }}.toMap()
-        val distanceArray = distanceMap.filterKeys { it >= 0 }.toList().sortedBy { it.first }.map { it.second.filterKeys { it >= 0 }.toList().sortedBy { it.first }.map {it.second}.toIntArray() }
+        val distanceNodes = (openableValves + setOf(node)).toList()
+            .map { if (it is MapValvesBackedGraphNode) it else throw IllegalStateException() }
+        val distanceMap =
+            distanceNodes.map { distanceNodes.indexOf(it) to it.shortestPaths.mapKeys { e -> distanceNodes.indexOf(e.key) } }
+                .toMap()
+        val distanceArray = distanceMap.filterKeys { it >= 0 }.toList().sortedBy { it.first }
+            .map { it.second.filterKeys { it >= 0 }.toList().sortedBy { it.first }.map { it.second }.toIntArray() }
         val countNodes = distanceNodes.size - 1
         val keyMult1 = players + 1
         val keyMult2a = timeLeft + 1
@@ -92,7 +96,8 @@ class Day16() {
             player: Int,
             depth: Int
         ): Int {
-            val key = (keyMult3 * currentOpenableValves) + (keyMult2 * currentNode) + (keyMult1 * currentTimeLeft) + player
+            val key =
+                (keyMult3 * currentOpenableValves) + (keyMult2 * currentNode) + (keyMult1 * currentTimeLeft) + player
             val cached = cache[key]
             val newValves = if (cached != empty) {
                 val positive = cached.absoluteValue
@@ -142,16 +147,7 @@ class Day16() {
                 newValves
         }
 
-        val go = go(timeLeft, countNodes, (1 shl countNodes) - 1, players, 0)
-        /*println(keyMult3)
-        println(keyMult2)
-        println(keyMult1)
-        println(cache.asSequence().withIndex().filter { it.value != empty }.map { it.index }.take(100).map{ "${it/keyMult3}, ${(it%keyMult3)/keyMult2}, ${(it%keyMult2)/keyMult1}, ${it%keyMult1}\n"}.toList())
-        println(cache.size)
-        println(cache.count { it != empty})
-        println(cache.count { it < 0})
-        println(cache.asSequence().withIndex().filter { it.value != empty })
-        */return go
+        return go(timeLeft, countNodes, (1 shl countNodes) - 1, players, 0)
     }
 }
 
