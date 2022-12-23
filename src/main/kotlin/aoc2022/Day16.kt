@@ -76,39 +76,45 @@ class Day16() {
             currentTimeLeft: Int,
             currentNode: Int,
             currentOpenableValves: Int,
-            players:Int
-        ): Int =
-            maxOf(
-                (1 until countNodes).maxOf { gotoNode ->
-                    if ((currentOpenableValves and (1 shl gotoNode)) == 0)
-                        0
-                    else {
-                        val distance = distanceArray[currentNode][gotoNode]
-                        val newTimeLeft = currentTimeLeft - distance - 1
-                        val addedPressure = distanceNodes[gotoNode].value.flowRate * newTimeLeft
-                        val newOpenableValves = currentOpenableValves - (1 shl gotoNode)
-                        if (newOpenableValves == 0 || (newTimeLeft <= 1)) {
-                            addedPressure
-                        } else {
-                            go(
-                                newTimeLeft,
-                                gotoNode,
-                                newOpenableValves,
-                                players
-                            ) + addedPressure
-                        }
-                    }
-                },
-                if (players > 1)
+            players:Int,
+            depth: Int
+        ): Int {
+            val newValves = (1 until countNodes).maxOf { gotoNode ->
+                if ((currentOpenableValves and (1 shl gotoNode)) == 0)
+                    0
+                else {
+                    val distance = distanceArray[currentNode][gotoNode]
+                    val newTimeLeft = currentTimeLeft - distance - 1
+                    val addedPressure = distanceNodes[gotoNode].value.flowRate * newTimeLeft
+                    val newOpenableValves = currentOpenableValves - (1 shl gotoNode)
+                    if (newOpenableValves == 0 || (newTimeLeft <= 1)) {
+                        addedPressure
+                    } else {
                         go(
-                            timeLeft,
-                            0,
-                            currentOpenableValves,
-                            players - 1
-                        )
-                else 0
-            )
+                            newTimeLeft,
+                            gotoNode,
+                            newOpenableValves,
+                            players,
+                            depth + 1
+                        ) + addedPressure
+                    }
+                }
+            }
+            return if (players > 1 && (depth >= (countNodes / players)-2))
+                maxOf(
+                    newValves,
+                    go(
+                        timeLeft,
+                        0,
+                        currentOpenableValves,
+                        players - 1,
+                        depth + 1
+                    )
+                )
+            else
+                newValves
+        }
 
-        return go(timeLeft, 0, (2 shl countNodes)-1, players)
+        return go(timeLeft, 0, (2 shl countNodes)-2, players, 0)
     }
 }
