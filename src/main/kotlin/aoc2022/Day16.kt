@@ -1,6 +1,9 @@
 package aoc2022
 
 import aoc.*
+import kotlin.math.absoluteValue
+
+private const val empty: Int = Int.MAX_VALUE
 
 class Day16() {
     data class Valve(val name: String, val flowRate: Int, val tunnelsTo: List<String>) {
@@ -67,54 +70,92 @@ class Day16() {
         openableValves: Set<GraphNode<Valve>>,
         players:Int
     ): Int {
-        val distanceNodes = (setOf(node) + openableValves).toList().map{ if (it is MapValvesBackedGraphNode) it else throw IllegalStateException() }
+        val distanceNodes = (openableValves + setOf(node)).toList().map{ if (it is MapValvesBackedGraphNode) it else throw IllegalStateException() }
         val distanceMap = distanceNodes.map { distanceNodes.indexOf(it) to it.shortestPaths.mapKeys { e -> distanceNodes.indexOf(e.key) }}.toMap()
         val distanceArray = distanceMap.filterKeys { it >= 0 }.toList().sortedBy { it.first }.map { it.second.filterKeys { it >= 0 }.toList().sortedBy { it.first }.map {it.second}.toIntArray() }
-        val countNodes = distanceNodes.size
+        val countNodes = distanceNodes.size - 1
+        val keyMult1 = players + 1
+        val keyMult2a = timeLeft + 1
+        val keyMult2 = keyMult1 * keyMult2a
+        val keyMult3a = countNodes + 1
+        val keyMult3 = keyMult2 * keyMult3a
+        val cache = IntArray((1 shl keyMult3a) * keyMult2a * (countNodes) * keyMult1) { empty }
+
+        // Due to symmetry, not all possibilities need to be check from the elephant perspective.
+        // Thy this is the right number is a little unclear. Might not work for all input.
+        val minDepth = countNodes / 2 - 1
 
         fun go(
             currentTimeLeft: Int,
             currentNode: Int,
             currentOpenableValves: Int,
-            players:Int,
+            player: Int,
             depth: Int
         ): Int {
-            val newValves = (1 until countNodes).maxOf { gotoNode ->
-                if ((currentOpenableValves and (1 shl gotoNode)) == 0)
-                    0
-                else {
-                    val distance = distanceArray[currentNode][gotoNode]
-                    val newTimeLeft = currentTimeLeft - distance - 1
-                    val addedPressure = distanceNodes[gotoNode].value.flowRate * newTimeLeft
-                    val newOpenableValves = currentOpenableValves - (1 shl gotoNode)
-                    if (newOpenableValves == 0 || (newTimeLeft <= 1)) {
-                        addedPressure
-                    } else {
-                        go(
-                            newTimeLeft,
-                            gotoNode,
-                            newOpenableValves,
-                            players,
-                            depth + 1
-                        ) + addedPressure
+            val key = (keyMult3 * currentOpenableValves) + (keyMult2 * currentNode) + (keyMult1 * currentTimeLeft) + player
+            val cached = cache[key]
+            val newValves = if (cached != empty) {
+                val positive = cached.absoluteValue
+                cache[key] = -positive
+                positive
+            } else {
+                val newCache = (0 until countNodes).maxOf { gotoNode ->
+                    if ((currentOpenableValves and (1 shl gotoNode)) == 0)
+                        0
+                    else {
+                        val distance = distanceArray[currentNode][gotoNode]
+                        val newTimeLeft = currentTimeLeft - distance - 1
+                        val addedPressure = distanceNodes[gotoNode].value.flowRate * newTimeLeft
+                        val newOpenableValves = currentOpenableValves - (1 shl gotoNode)
+
+                        if (newOpenableValves == 0 || (newTimeLeft <= 1)) {
+                            addedPressure
+                        } else {
+                            val pressure = go(
+                                newTimeLeft,
+                                gotoNode,
+                                newOpenableValves,
+                                player,
+                                depth + 1
+                            ) + addedPressure
+                            pressure
+                        }
                     }
                 }
+                cache[key] = newCache
+                newCache
             }
-            return if (players > 1 && (depth >= (countNodes / players)-2))
-                maxOf(
-                    newValves,
+            return if (player > 1 && depth >= minDepth) {
+                val newPlayer =
                     go(
                         timeLeft,
-                        0,
+                        countNodes,
                         currentOpenableValves,
-                        players - 1,
+                        player - 1,
                         depth + 1
                     )
+                maxOf(
+                    newValves,
+                    newPlayer
                 )
-            else
+            } else
                 newValves
         }
 
-        return go(timeLeft, 0, (2 shl countNodes)-2, players, 0)
+        val go = go(timeLeft, countNodes, (1 shl countNodes) - 1, players, 0)
+        /*println(keyMult3)
+        println(keyMult2)
+        println(keyMult1)
+        println(cache.asSequence().withIndex().filter { it.value != empty }.map { it.index }.take(100).map{ "${it/keyMult3}, ${(it%keyMult3)/keyMult2}, ${(it%keyMult2)/keyMult1}, ${it%keyMult1}\n"}.toList())
+        println(cache.size)
+        println(cache.count { it != empty})
+        println(cache.count { it < 0})
+        println(cache.asSequence().withIndex().filter { it.value != empty })
+        */return go
     }
+}
+
+fun main() {
+    val input = readFile(2022, 16).readText()
+    println(Day16().part2(input))
 }
