@@ -150,8 +150,3 @@ class Day16() {
         return go(timeLeft, countNodes, (1 shl countNodes) - 1, players, 0)
     }
 }
-
-fun main() {
-    val input = readFile(2022, 16).readText()
-    println(Day16().part2(input))
-}
