@@ -15,12 +15,12 @@ internal class Day17Test {
 
     @Test
     fun testPart1TestInput() {
-        subject.testSafe(year, day, 1, false, 3068) { part1(testInput) }
+        subject.testSafe(year, day, 1, false, 3068L) { part1(testInput) }
     }
 
     @Test
     fun testPart1RealInput() {
-        subject.testSafe(year, day, 1, true, 3069) { part1(input) }
+        subject.testSafe(year, day, 1, true, 3069L) { part1(input) }
     }
 
     @Test
@@ -30,6 +30,6 @@ internal class Day17Test {
 
     @Test
     fun testPart2RealInput() {
-        subject.testSafe(year, day, 2, true) { part2(input) }
+        subject.testSafe(year, day, 2, true, 1523167155404) { part2(input) }
     }
 }
