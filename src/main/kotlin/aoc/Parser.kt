@@ -1,6 +1,9 @@
 package aoc
 
+import aoc2022.Day19
 import java.lang.IllegalArgumentException
+import java.util.EnumSet
+import kotlin.reflect.KClass
 import kotlin.reflect.KProperty0
 
 class Context(val source: CharSequence, var index: Int = 0) {
@@ -147,6 +150,15 @@ class OneOf<R>(private vararg val parsers: Parser<out R>): Parser<R>() {
         return context.error("aoc.OneOf has no match")
     }
 }
+
+fun <R: Enum<R>> byEnum(e: KClass<R>) =
+    aoc.byEnum(e) { it -> it.name.lowercase() }
+
+fun <R: Enum<R>> byEnum(e: KClass<R>, f: (R) -> String): Parser<R> {
+    val parsers = EnumSet.allOf(e.java).map { Literal(f(it)).asValue(it) }.toTypedArray()
+    return oneOf(*parsers)
+}
+
 
 fun <R> oneOf(vararg parsers: Parser<out R>) = object: Parser<R>() {
     override fun apply(context: Context): Result<R> {

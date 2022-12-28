@@ -75,7 +75,7 @@ fun union(r: List<IntRange>): List<IntRange> {
 
 
 
-fun <T> getCombinations(list: List<T>, n: Int): List<Pair<List<T>, List<T>>> {
+fun <T> getCombinationPairs(list: List<T>, n: Int): List<Pair<List<T>, List<T>>> {
     val m = list.size
     val result = mutableListOf<Pair<List<T>, List<T>>>()
 
@@ -87,6 +87,36 @@ fun <T> getCombinations(list: List<T>, n: Int): List<Pair<List<T>, List<T>>> {
             if (newIndex == n) {
                 val pair1 =
                     Pair(list.filterIndexed { it, _ -> it in indexes }, list.filterIndexed { it, _ -> it !in indexes })
+                //           println("added: $pair1")
+                result.add(pair1)
+            } else {
+                go(n, indexes, i+1, newIndex)
+            }
+        }
+    }
+    for (j in 1..n) {
+        go(j, IntArray(j), 0, 0)
+
+    }
+    return result
+
+}
+
+fun <T> getCombinations(list: Collection<T>): List<List<T>> =
+    getCombinations(list, list.size)
+
+fun <T> getCombinations(list: Collection<T>, n: Int): List<List<T>> {
+    val m = list.size
+    val result = mutableListOf<List<T>>()
+
+    fun go(n: Int, indexes: IntArray, start: Int, index: Int) {
+        for (i in start..(m-1)) {
+            indexes[index] = i
+            //         println("indexes: ${indexes.toList()}, start: ${start}, index: ${index}")
+            val newIndex = index + 1
+            if (newIndex == n) {
+                val pair1 =
+                    list.filterIndexed { it, _ -> it in indexes }
                 //           println("added: $pair1")
                 result.add(pair1)
             } else {
