@@ -1,8 +1,6 @@
 package aoc2022
 
 import aoc.*
-import org.omg.CORBA.MARSHAL
-import kotlin.math.cos
 
 class Day19() {
     //Blueprint 1: Each ore robot costs 4 ore. Each clay robot costs 2 ore. Each obsidian robot costs 3 ore and 14 clay. Each geode robot costs 2 ore and 7 obsidian.
@@ -27,59 +25,39 @@ class Day19() {
     val parser = zeroOrMore(line)
 
     fun Blueprint.score(timeLeft: Int, robots: Map<Material, Int>, materials: Map<Material, Int>, max: Map<Material, Int>): Int {
-        if (timeLeft == 0) {
-            println("materials: $materials, robots: $robots")
-            return materials[Material.GEODE]?:0
-        }
+        val m = materials.toMutableMap()
+        val r = robots.toMutableMap()
 
-        val newMaterials: Map<Material, Int> = mineMaterials(materials, robots)
-        val buildableRobots = this.buildInstruction.filterValues { instr ->
-            instr.costs.all { cost ->
-                materials[cost.material]?: 0 >= cost.amount
-            }
-        }.filterKeys { robots[it]?:0 < max[it]?:0 }
-        if (buildableRobots.isNotEmpty()) {
-            return maxOf(
-                score(timeLeft - 1, robots, newMaterials, max),
-                buildableRobots.maxOf { buildRobot ->
-                    val (newRobots, newMaterials2) = buildRobots(robots, buildRobot, newMaterials)
-                    score(timeLeft - 1, newRobots, newMaterials2, max)
+        (timeLeft downTo 1).forEach {
+            val r2 = r.toMap()
+
+            Material.values().reversed().forEach { type ->
+                if (r[type]?:0 < max[type]?: 0) {
+                    val inst = buildInstruction[type]!!
+                    if (inst.costs.all{ cost -> m[cost.material] ?: 0 >= cost.amount }) {
+                        r.merge(type, 1) { old, _ -> old + 1 }
+                        inst.costs.forEach { cost ->
+                            m.merge(cost.material, -cost.amount) { old, _ -> old - cost.amount }
+                        }
+                    }
                 }
-            )
+            }
+            r2.forEach { robot ->
+                m.merge(robot.key, robot.value) { old, _ -> old + robot.value }
+            }
+            println("$m, $r")
 
-        } else {
-            return score(timeLeft - 1, robots, newMaterials, max)
         }
+        println(m)
+        println(r)
+
+        return m[Material.GEODE]?:0
     }
 
-    private fun Blueprint.buildRobots(
-        robots: Map<Material, Int>,
-        buildRobot: Map.Entry<Material, BuildInstruction>,
-        newMaterials: Map<Material, Int>
-    ): Pair<Map<Material, Int>, Map<Material, Int>> {
-        val newRobots: MutableMap<Material, Int> = HashMap(robots)
-        newRobots.merge(buildRobot.key, 1) { old, _ -> old + 1 }
-        val newMaterials = HashMap(newMaterials)
-        this.buildInstruction[buildRobot.key]!!.costs.forEach { cost ->
-            newMaterials.merge(cost.material, 0) { old, _ -> old - cost.amount }
-        }
-        return Pair(newRobots, newMaterials)
-    }
-
-    private fun mineMaterials(
-        materials: Map<Material, Int>,
-        robots: Map<Material, Int>
-    ): Map<Material, Int> {
-        val newMaterials: MutableMap<Material, Int> = HashMap(materials)
-        robots.forEach { robot ->
-            newMaterials.merge(robot.key, 1) { old, _ -> old + 1 }
-        }
-        return newMaterials
-    }
 
     fun part1(input: String): Int {
         val parsed = parser.parse(input)
-        val max = mapOf(Material.ORE to 1, Material.CLAY to 4, Material.OBSIDIAN to 2, Material.GEODE to 1)
+        val max = mapOf(Material.ORE to 1, Material.CLAY to 4, Material.OBSIDIAN to 2, Material.GEODE to 2)
         println(parsed[0].score(24, mapOf(Material.ORE to 1), mapOf(), max))
         //return parsed.sumOf { it.index * it.score(22, mapOf(Material.ORE to 1), mapOf(), max) }
         return TODO()
