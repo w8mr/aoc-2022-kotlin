@@ -12,13 +12,13 @@ class Day19() {
     }
 
     data class Cost(val amount: Int, val material: Material)
-    data class BuildInstruction(val type: Material, val costs: List<Cost>)
+    data class BuildInstruction(val type: Material, val costs: Map<Material, Cost>)
     data class Blueprint(val index: Int, val buildInstruction: Map<Material, BuildInstruction>)
 
     val material = byEnum(Material::class)
     val index = "Blueprint " followedBy number() followedBy ":"
     val cost = seq(number(), " " followedBy material, ::Cost)
-    val costs = cost sepBy " and "
+    val costs = (cost sepBy " and ") map { it.associateBy { Cost::material }}
     val build = seq(" Each " followedBy material, " robot costs " followedBy costs, ::BuildInstruction) followedBy "."
     val builds = zeroOrMore(build) map { it.associateBy(BuildInstruction::type) }
     val line = seq(index, builds, ::Blueprint) followedBy "\n"
@@ -31,20 +31,24 @@ class Day19() {
         (timeLeft downTo 1).forEach {
             val r2 = r.toMap()
 
-            Material.values().reversed().forEach { type ->
-                if (r[type]?:0 < max[type]?: 0) {
-                    val inst = buildInstruction[type]!!
-                    if (inst.costs.all{ cost -> m[cost.material] ?: 0 >= cost.amount }) {
-                        r.merge(type, 1) { old, _ -> old + 1 }
-                        inst.costs.forEach { cost ->
-                            m.merge(cost.material, -cost.amount) { old, _ -> old - cost.amount }
-                        }
+            if (canBuild(materials, Material.GEODE)) {
+                println("Bauild geode robot")
+                buildRobot(Material.GEODE, m, r)
+            } else {
+                println("Can't build geode robot")
+                if (canBuild(materials, Material.OBSIDIAN)) {
+                    println("Can build obsidian robot")
+                    val neededObsidian = neededToBuild(m, Material.OBSIDIAN, Material.GEODE)
+                    val neededTime = neededObsidian / (r[Material.OBSIDIAN] ?: 0)
+                    val neededOre = neededToBuild(m, Material.ORE, Material.GEODE)
+                    val hasOreWhenBuildObsidian = m[Material.ORE] ?: 0 + (r[Material.ORE] ?: 0 * neededTime)
+                    if (hasOreWhenBuildObsidian > neededOre) {
+                        println("Build obsidian robot")
+                        buildRobot(Material.OBSIDIAN, m, r)
                     }
                 }
             }
-            r2.forEach { robot ->
-                m.merge(robot.key, robot.value) { old, _ -> old + robot.value }
-            }
+            mine(r2, m)
             println("$m, $r")
 
         }
@@ -52,6 +56,32 @@ class Day19() {
         println(r)
 
         return m[Material.GEODE]?:0
+    }
+
+    private fun Blueprint.canBuild(materials: Map<Material, Int>, material: Material) =
+        buildInstruction[material]?.costs?.values?.all { cost -> materials[cost.material] ?: 0 >= cost.amount } == true
+
+    private fun mine(
+        r2: Map<Material, Int>,
+        m: MutableMap<Material, Int>
+    ) {
+        r2.forEach { robot ->
+            m.merge(robot.key, robot.value) { old, _ -> old + robot.value }
+        }
+    }
+
+    private fun Blueprint.buildRobot(
+        type: Material,
+        m: MutableMap<Material, Int>,
+        r: MutableMap<Material, Int>
+    ) {
+        val inst = buildInstruction[type]!!
+        if (inst.costs.all { cost -> m[cost.material] ?: 0 >= cost.amount }) {
+            r.merge(type, 1) { old, _ -> old + 1 }
+            inst.costs.forEach { cost ->
+                m.merge(cost.material, -cost.amount) { old, _ -> old - cost.amount }
+            }
+        }
     }
 
 
@@ -67,4 +97,7 @@ class Day19() {
         return TODO()
     }
 }
+
+    private fun Blueprint.neededToBuild(m: MutableMap<Material, Int>, material: Material, robot: Material) =
+        buildInstruction[robot]!!.costs[material]!!.amount - (m[material] ?: 0)
 
