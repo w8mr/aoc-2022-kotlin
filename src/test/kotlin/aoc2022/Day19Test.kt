@@ -20,16 +20,16 @@ internal class Day19Test {
 
     @Test
     fun testPart1RealInput() {
-        subject.testSafe(year, day, 1, true) { part1(input) }
+        subject.testSafe(year, day, 1, true, 1613) { part1(input) }
     }
 
     @Test
     fun testPart2TestInput() {
-        subject.testSafe(year, day, 2, false) { part2(testInput) }
+        subject.testSafe(year, day, 2, false, 3472) { part2(testInput) }
     }
 
     @Test
     fun testPart2RealInput() {
-        subject.testSafe(year, day, 2, true) { part2(input) }
+        subject.testSafe(year, day, 2, true, 46816) { part2(input) }
     }
 }
