@@ -102,6 +102,8 @@ fun <T> getCombinationPairs(list: List<T>, n: Int): List<Pair<List<T>, List<T>>>
 
 }
 
+fun  Iterable<Int>.product() = this.fold(1) { acc, v -> acc * v }
+
 fun <T> getCombinations(list: Collection<T>): List<List<T>> =
     getCombinations(list, list.size)
 

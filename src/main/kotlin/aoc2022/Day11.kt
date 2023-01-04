@@ -34,7 +34,7 @@ fun main() {
 
     fun solve(input: String, n: Int, d: Int): Long {
         val parsed = monkeys.parse(input)
-        val ring = parsed.map(Monkey::divisibleBy).fold(1) { acc, v -> acc * v }
+        val ring = parsed.map(Monkey::divisibleBy).product()
         (1..n).forEach {
             parsed.forEach {
                 it.items.forEach { item ->
