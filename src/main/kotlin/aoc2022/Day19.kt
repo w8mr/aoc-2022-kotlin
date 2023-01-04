@@ -41,6 +41,72 @@ class Day19() {
     val parser = zeroOrMore(line)
 
     fun BlueprintInt.score(timeLeft: Int): Int {
+        val robotCosts = listOf(
+            listOf(oreRobotOre, 0, 0, 0),
+            listOf(clayRobotOre, 0, 0, 0),
+            listOf(obsidianRobotOre, obsidianRobotClay, 0, 0),
+            listOf(geodeRobotOre, 0, geodeRobotObsidian, 0))
+
+        val maxOreNeeded = maxOf(oreRobotOre, clayRobotOre, obsidianRobotOre, geodeRobotOre)
+
+        val maxNeeded = listOf(maxOreNeeded, obsidianRobotClay, geodeRobotObsidian, timeLeft)
+
+        fun go(
+            timeLeft: Int,
+            robots: List<Int>,
+            amounts: List<Int>
+        ): Int {
+            if (timeLeft <= 0) {
+                return amounts[3]
+            }
+
+            fun goGeneric(robotIdx: Int) =
+                if ((robots[robotIdx] >= maxNeeded[robotIdx])) 0 else {
+                    val canBuild = (0..3).all { costIdx -> robotCosts[robotIdx][costIdx] == 0 || robots[costIdx] > 0 }
+                    if (!canBuild) 0 else {
+                        val timeNeeded = (0..3).maxOf { costIdx ->
+                            if (robotCosts[robotIdx][costIdx] <= 0) 0
+                            else maxOf(
+                                0,
+                                robotCosts[robotIdx][costIdx] - amounts[costIdx] + robots[costIdx] - 1
+                            ) / robots[costIdx]
+                        } + 1
+                        if (timeLeft - timeNeeded < 0) {
+                            if (robots[3] == 0) 0
+                            else amounts[3] + timeLeft * robots[3]
+                        } else {
+                            val newRobots = robots.mapIndexed { index, count -> if (robotIdx == index) count + 1 else count}
+                            val newAmounts = amounts.mapIndexed { index, amount -> amount + timeNeeded * robots[index] - robotCosts[robotIdx][index]}
+                            go(
+                                timeLeft - timeNeeded,
+                                newRobots,
+                                newAmounts
+                            )
+                        }
+                    }
+                }
+
+            return (0..3).maxOf(::goGeneric)
+        }
+
+        val result = go(timeLeft, listOf(1, 0, 0, 0), listOf(0, 0, 0, 0))
+        println("Blueprint $index: ${result}")
+        return result
+    }
+
+    fun part1(input: String): Int {
+        val parsed = parser.parse(input)
+        return parsed.sumOf { it.index * it.score(24) }
+    }
+
+    fun part2(input: String): Int {
+        val parsed = parser.parse(input)
+        return parsed.take(3).map { it.score(32) }.product()
+    }
+}
+
+/*
+    fun BlueprintInt.score(timeLeft: Int): Int {
         val maxOreNeeded = maxOf(oreRobotOre, clayRobotOre, obsidianRobotOre, geodeRobotOre)
 
         fun go(timeLeft: Int,
@@ -140,16 +206,7 @@ class Day19() {
         return result
     }
 
-    fun part1(input: String): Int {
-        val parsed = parser.parse(input)
-        return parsed.sumOf { it.index * it.score(24) }
-    }
-
-    fun part2(input: String): Int {
-        val parsed = parser.parse(input)
-        return parsed.take(3).map { it.score(32) }.product()
-    }
-}
+ */
 
 
 /*
