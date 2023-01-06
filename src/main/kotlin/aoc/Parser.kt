@@ -80,9 +80,16 @@ infix fun <R,T> Parser<R>.map(map: (value: R) -> T): Parser<T> {
 
 infix fun <R> Parser<R>.sepBy(separator: String, ) = zeroOrMore(seq(this, optional(Literal(separator))) { result, _ -> result})
 
-fun <R> zeroOrMore(parser: Parser<R>) = object: Parser<List<R>>() {
+operator fun <R> Parser<R>.times(times: Int) = repeat(this, times, times)
+
+fun <R> oneOrMore(parser: Parser<R>): Parser<List<R>> = repeat(parser, min = 1)
+
+fun <R> zeroOrMore(parser: Parser<R>): Parser<List<R>> = repeat(parser)
+
+fun <R> repeat(parser: Parser<R>, max: Int = Int.MAX_VALUE, min: Int = 0) = object: Parser<List<R>>() {
     override fun apply(context: Context): Result<List<R>> {
         val list = mutableListOf<R>()
+        val begin = context.index
         while (context.index < context.source.length) {
             val cur = context.index
             when (val result = parser.apply(context)) {
@@ -93,7 +100,21 @@ fun <R> zeroOrMore(parser: Parser<R>) = object: Parser<List<R>>() {
                 }
             }
         }
-        return context.success(list, 0)    }
+        val size = list.size
+        return when {
+            size < min -> {
+                context.index = begin
+                context.error("repeat only $size elements found, needed at least $min")
+            }
+
+            size > max -> {
+                context.index = begin
+                context.error("repeat more elements found, needed at most $max")
+            }
+
+            else -> context.success(list, 0)
+        }
+    }
 }
 
 fun <R1, R2, T> seq(p1: Parser<R1>, p2: Parser<R2>, map: (v1: R1, v2: R2) -> T) = object: Parser<T>() {
