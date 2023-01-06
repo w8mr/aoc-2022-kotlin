@@ -3,10 +3,10 @@ package aoc.aoc2015
 import aoc.*
 
 fun main() {
-    val up = Literal("(").to(1)
-    val down = Literal(")").to(-1)
-    val instruction = OneOf(up,down)
-    val instructions = zeroOrMore(instruction)
+    val up = "(" asValue 1
+    val down = ")" asValue -1
+    val instruction = up or down
+    val instructions = oneOrMore(instruction)
 
 
     fun part1(input: String): Int {

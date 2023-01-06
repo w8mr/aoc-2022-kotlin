@@ -148,18 +148,6 @@ fun <R1, R2, R3, R4, R5, R6, T> seq(p1: Parser<R1>, p2: Parser<R2>, p3: Parser<R
     return seq(seq(p1, p2), seq(p3, p4), seq(p5, p6) { v5, v6 -> Pair(v5, v6) }) { (v1, v2), (v3, v4), (v5, v6) -> map(v1, v2, v3, v4, v5, v6) }
 }
 
-class OneOf<R>(private vararg val parsers: Parser<out R>): Parser<R>() {
-    override fun apply(context: Context): Result<R> {
-        for (parser in parsers) {
-            when (val result = parser.apply(context)) {
-                is Success -> return context.success(result.value, 0)
-                else -> {}
-            }
-        }
-        return context.error("aoc.OneOf has no match")
-    }
-}
-
 fun <R: Enum<R>> byEnum(e: KClass<R>) =
     byEnum(e) { it -> it.name.lowercase() }
 

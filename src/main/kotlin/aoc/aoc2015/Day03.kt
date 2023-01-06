@@ -4,11 +4,11 @@ import aoc.*
 import kotlin.reflect.KFunction1
 
 fun main() {
-    val up = Literal("^").to(Coord::up)
-    val down = Literal("v").to(Coord::down)
-    val right = Literal(">").to(Coord::right)
-    val left = Literal("<").to(Coord::left)
-    val instructions = zeroOrMore(OneOf(up, down, right, left))
+    val up = "^" asValue Coord::up
+    val down = "v" asValue Coord::down
+    val right = ">" asValue Coord::right
+    val left = "<" asValue Coord::left
+    val instructions = oneOrMore(oneOf(up, down, right, left))
 
     fun vistedHouses(i: List<KFunction1<Coord, Coord>>) =
         i.scan(Coord()) { acc, instr -> instr(acc) }.toSet()
