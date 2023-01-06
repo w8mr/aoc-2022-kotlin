@@ -1,6 +1,5 @@
 package aoc
 
-import aoc2022.Day19
 import java.lang.IllegalArgumentException
 import java.util.EnumSet
 import kotlin.reflect.KClass
@@ -152,7 +151,7 @@ class OneOf<R>(private vararg val parsers: Parser<out R>): Parser<R>() {
 }
 
 fun <R: Enum<R>> byEnum(e: KClass<R>) =
-    aoc.byEnum(e) { it -> it.name.lowercase() }
+    byEnum(e) { it -> it.name.lowercase() }
 
 fun <R: Enum<R>> byEnum(e: KClass<R>, f: (R) -> String): Parser<R> {
     val parsers = EnumSet.allOf(e.java).map { Literal(f(it)).asValue(it) }.toTypedArray()
@@ -217,8 +216,10 @@ fun <R> ref(parserRef: KProperty0<Parser<R>>): Parser<R> = object : Parser<R>() 
 infix fun <R> String.followedBy(parser: Parser<R>): Parser<R> = seq(Literal(this), parser, ::second)
 infix fun <R> Parser<R>.followedBy(literal: String): Parser<R> = seq(this, Literal(literal), ::first)
 
-fun number() = Regex("-?\\d+") map { it.toInt() }
-fun digit() = Regex("\\d") map { it.toInt() }
+fun number() = regex("-?\\d+") map { it.toInt() }
+fun digit() = regex("\\d") map { it.toInt() }
+
+fun word() = regex("\\w+")
 
 fun <R> optional(p: Parser<R>) : Parser<R?> =
     Or(p, Empty()) map { o ->
