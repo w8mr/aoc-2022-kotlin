@@ -19,13 +19,13 @@ class Day07() {
             get() = subNodes.sumOf { it.size }
     }
 
-    val fileEntry = seq(number(), Literal(" "), Regex("[a-zA-Z./]+"), Literal("\n")) { size, _, n, _ -> FileNode(size, n) }
-    val dirEntry = seq(Literal("dir "), Regex("[a-zA-Z./]+"), Literal("\n")) { _, n, _ -> DirNode(n) }
+    val fileEntry = seq(number(), Literal(" "), regex("[a-zA-Z./]+"), Literal("\n")) { size, _, n, _ -> FileNode(size, n) }
+    val dirEntry = seq(Literal("dir "), regex("[a-zA-Z./]+"), Literal("\n")) { _, n, _ -> DirNode(n) }
     val fileDirEntry = seq(zeroOrMore(dirEntry), fileEntry, zeroOrMore(dirEntry)) { _, e, _ -> e}
     val entry = OneOf(fileDirEntry, ref(::dirListing))
     val entries = zeroOrMore(entry)
     val dirListing: Parser<Node> = seq(Literal("\$ cd "),
-        Regex("[a-zA-Z/]+"),
+        regex("[a-zA-Z/]+"),
         Literal("\n\$ ls\n"),
         entries,
         Or(Literal("\$ cd ..\n"), EoF())) { _, n, _, e, _ -> DirNode(n, e) }

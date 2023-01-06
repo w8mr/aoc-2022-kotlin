@@ -3,7 +3,6 @@ package aoc2022
 import aoc.*
 import java.lang.IllegalArgumentException
 import java.lang.IndexOutOfBoundsException
-import java.util.PriorityQueue
 
 sealed class Elevation(val level: Int)
 class Level(level: Int): Elevation(level) {
@@ -60,7 +59,7 @@ fun <T> Grid<T>.fromCoord(coord:Coord): T? {
 fun main() {
     val parser = zeroOrMore(
         (zeroOrMore(
-            (Regex("[a-zSE]") map(::elevation))) + "\n").asArray()
+            (regex("[a-zSE]") map(::elevation))) + "\n").asArray()
     ).asArray()
 
     fun part1(input: String): Int {

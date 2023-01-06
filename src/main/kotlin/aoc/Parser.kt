@@ -16,17 +16,6 @@ class Context(val source: CharSequence, var index: Int = 0) {
 
     }
 }
-class Regex(private val pattern: String): Parser<String>() {
-    override fun apply(context: Context): Result<String> {
-        if (context.index > context.source.length) return context.error("End of File")
-        val result = "^$pattern".toRegex().find(context.source.subSequence(context.index, context.source.length))
-        return when (result) {
-            null -> context.error("aoc.Regex not matched")
-            else -> context.success(result.value, result.value.length)
-        }
-    }
-}
-
 fun regex(pattern: String) = object: Parser<String>() {
     override fun apply(context: Context): Result<String> {
         if (context.index > context.source.length) return context.error("End of File")
@@ -89,7 +78,7 @@ infix fun <R,T> Parser<R>.map(map: (value: R) -> T): Parser<T> {
     }
 }
 
-infix fun <R> Parser<R>.sepBy(separator: String, ) = zeroOrMore(seq(this, optional(Literal(separator)), ::first))
+infix fun <R> Parser<R>.sepBy(separator: String, ) = zeroOrMore(seq(this, optional(Literal(separator))) { result, _ -> result})
 
 fun <R> zeroOrMore(parser: Parser<R>) = object: Parser<List<R>>() {
     override fun apply(context: Context): Result<List<R>> {
@@ -213,8 +202,8 @@ fun <R> ref(parserRef: KProperty0<Parser<R>>): Parser<R> = object : Parser<R>() 
 
 }
 
-infix fun <R> String.followedBy(parser: Parser<R>): Parser<R> = seq(Literal(this), parser, ::second)
-infix fun <R> Parser<R>.followedBy(literal: String): Parser<R> = seq(this, Literal(literal), ::first)
+infix fun <R> String.followedBy(parser: Parser<R>): Parser<R> = seq(Literal(this), parser) { _, result -> result}
+infix fun <R> Parser<R>.followedBy(literal: String): Parser<R> = seq(this, Literal(literal))  { result, _ -> result}
 
 fun number() = regex("-?\\d+") map { it.toInt() }
 fun digit() = regex("\\d") map { it.toInt() }
@@ -228,6 +217,3 @@ fun <R> optional(p: Parser<R>) : Parser<R?> =
             is OrResult.Right -> null
         }
     }
-
-fun <T, R> second(ignore: T, second: R) = second
-fun <T, R> first(first: T, ignore: R) = first

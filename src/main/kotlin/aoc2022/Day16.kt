@@ -12,12 +12,11 @@ class Day16() {
 
     //Valve AA has flow rate=0; tunnels lead to valves DD, II, BB
     val valve = seq(
-        "Valve " followedBy Regex("[A-Z]{2}"),
+        "Valve " followedBy regex("[A-Z]{2}"),
         " has flow rate=" followedBy number(),
         seq(
             Literal("; tunnel leads to valve ") or Literal("; tunnels lead to valves "),
-            Regex("[A-Z]{2}") sepBy ", ", ::second
-        ),
+            regex("[A-Z]{2}") sepBy ", ") { _, result -> result },
         ::Valve) followedBy "\n"
 
     val valves = zeroOrMore(valve)
