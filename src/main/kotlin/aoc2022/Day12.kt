@@ -2,61 +2,56 @@ package aoc2022
 
 import aoc.*
 import java.lang.IllegalArgumentException
-import java.lang.IndexOutOfBoundsException
-
-sealed class Elevation(val level: Int)
-class Level(level: Int): Elevation(level) {
-    override fun toString(): String = "Level $level"
-}
-class Start: Elevation(0) {
-    override fun toString(): String = "Start"
-}
-class End: Elevation(25) {
-    override fun toString(): String = "End"
-}
-
-fun elevation(char: String): Elevation {
-    if (char.length != 1) throw IllegalArgumentException()
-    return when (val c = char[0]) {
-        'S' -> Start()
-        'E' -> End()
-        else -> Level(c - 'a')
-    }
-}
-
-fun <T> Grid<T>.find(predicate: (T)  -> Boolean): Coord? {
-    this.forEachIndexed { y, inner ->
-        inner.forEachIndexed { x, element ->
-            if (predicate(element)) {
-                return Coord(x, y)
-            }
-        }
-    }
-    return null
-}
 
 typealias Grid<T> = Array<Array<T>>
-data class GridBackedGraphNode<T>(private val gridBack: GridBack<T>, private val coord: Coord) : GraphNode<T> {
-    override val neighbours by lazy { gridBack.neighbourNodes(gridBack, coord) }
-    override val value: T by lazy { gridBack.grid.fromCoord(coord)!! }
-}
 
-class GridBack<T>(val grid: Grid<T>, val neighbourNodes: (GridBack<T>, Coord) -> List<Pair<Int, GraphNode<T>>>)
-
-fun <T> Grid<T>.toDAG(start:Coord, neighbourNodes: (GridBack<T>, Coord) -> List<Pair<Int, GraphNode<T>>>): GraphNode<T> {
-    return GridBackedGraphNode(GridBack(this, neighbourNodes), start)
-}
-
-fun <T> Grid<T>.fromCoord(coord:Coord): T? {
-    return try {
-        this[coord.y][coord.x]
-    } catch (iobe : IndexOutOfBoundsException) {
-        null
+class Day12 {
+    companion object {
+        fun <T> Grid<T>.fromCoord(coord:Coord) =
+            this.getOrNull(coord.y)?.getOrNull(coord.x)
     }
-}
+    sealed class Elevation(val level: Int)
+    class Level(level: Int): Elevation(level) {
+        override fun toString(): String = "Level $level"
+    }
+    class Start: Elevation(0) {
+        override fun toString(): String = "Start"
+    }
+    class End: Elevation(25) {
+        override fun toString(): String = "End"
+    }
 
+    fun elevation(char: String): Elevation {
+        if (char.length != 1) throw IllegalArgumentException()
+        return when (val c = char[0]) {
+            'S' -> Start()
+            'E' -> End()
+            else -> Level(c - 'a')
+        }
+    }
 
-fun main() {
+    fun <T> Grid<T>.find(predicate: (T)  -> Boolean): Coord? {
+        this.forEachIndexed { y, inner ->
+            inner.forEachIndexed { x, element ->
+                if (predicate(element)) {
+                    return Coord(x, y)
+                }
+            }
+        }
+        return null
+    }
+
+    data class GridBackedGraphNode<T>(private val gridBack: GridBack<T>, private val coord: Coord) : GraphNode<T> {
+        override val neighbours by lazy { gridBack.neighbourNodes(gridBack, coord) }
+        override val value: T by lazy { gridBack.grid.fromCoord(coord)!! }
+    }
+
+    class GridBack<T>(val grid: Grid<T>, val neighbourNodes: (GridBack<T>, Coord) -> List<Pair<Int, GraphNode<T>>>)
+
+    fun <T> Grid<T>.toDAG(start:Coord, neighbourNodes: (GridBack<T>, Coord) -> List<Pair<Int, GraphNode<T>>>): GraphNode<T> {
+        return GridBackedGraphNode(GridBack(this, neighbourNodes), start)
+    }
+
     val parser = zeroOrMore(
         (zeroOrMore(
             (regex("[a-zSE]") map(::elevation))) + "\n").asArray()
@@ -104,19 +99,6 @@ fun main() {
             }
         }!!
     }
-    // test if implementation meets criteria from the description, like:/
-    val testInput = readFile(2022, 12, 1).readText()
-    val input = readFile(2022, 12).readText()
-    check(part1(testInput) == 31)
-
-    println(part1(input))
-    check(part1(input) == 517)
-
-    check(part2(testInput) == 29)
-
-    println(part2(input))
-    check(part2(input) == 512)
-
 }
 
 

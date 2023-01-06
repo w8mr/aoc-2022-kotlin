@@ -1,26 +1,26 @@
 package aoc2022
 
 import aoc.*
-sealed interface Instruction {
-    fun run(register: Int): List<Int>
-}
-data class Addx(val value: Int) : Instruction {
-    override fun run(register: Int): List<Int> {
-        return listOf(register, register + value)
-    }
-}
-object Noop : Instruction {
-    override fun run(register: Int): List<Int> {
-        return listOf(register)
-    }
-}
 
-val addx = "addx " followedBy number() map ::Addx
-val noop = "noop" asValue Noop
-val instruction = (addx or noop) + "\n"
-val parser = zeroOrMore(instruction)
+class Day10 {
+    sealed interface Instruction {
+        fun run(register: Int): List<Int>
+    }
+    data class Addx(val value: Int) : Instruction {
+        override fun run(register: Int): List<Int> {
+            return listOf(register, register + value)
+        }
+    }
+    object Noop : Instruction {
+        override fun run(register: Int): List<Int> {
+            return listOf(register)
+        }
+    }
 
-fun main() {
+    val addx = "addx " followedBy number() map ::Addx
+    val noop = "noop" asValue Noop
+    val instruction = addx or noop followedBy  "\n"
+    val parser = zeroOrMore(instruction)
 
     fun calcState(input: String): List<Int> {
         val r = parser.parse(input)
@@ -47,15 +47,6 @@ fun main() {
                 }
             }
         }
-        return r.map { it.joinToString(separator = "") }.joinToString(separator = "\n")
+        return "\n"+r.map { it.joinToString(separator = "") }.joinToString(separator = "\n")
     }
-    // test if implementation meets criteria from the description, like:/
-    val testInput = readFile(2022, 10, 1).readText()
-    val input = readFile(2022, 10).readText()
-    check(part1(testInput) == 13140)
-
-    println(part1(input))
-    check(part1(input) == 14540)
-
-    println(part2(input))
 }

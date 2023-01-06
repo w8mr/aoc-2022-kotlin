@@ -22,7 +22,7 @@ class Day07() {
     val fileEntry = seq(number(), Literal(" "), regex("[a-zA-Z./]+"), Literal("\n")) { size, _, n, _ -> FileNode(size, n) }
     val dirEntry = seq(Literal("dir "), regex("[a-zA-Z./]+"), Literal("\n")) { _, n, _ -> DirNode(n) }
     val fileDirEntry = seq(zeroOrMore(dirEntry), fileEntry, zeroOrMore(dirEntry)) { _, e, _ -> e}
-    val entry = OneOf(fileDirEntry, ref(::dirListing))
+    val entry = fileDirEntry or ref(::dirListing)
     val entries = zeroOrMore(entry)
     val dirListing: Parser<Node> = seq(Literal("\$ cd "),
         regex("[a-zA-Z/]+"),

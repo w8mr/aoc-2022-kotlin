@@ -2,16 +2,17 @@ package aoc2022
 
 import aoc.*
 
-data class Monkey(
-    val index: Int,
-    var items: List<Long>,
-    val operator: Pair<(Long, Long) -> Long, OrResult<Long, String>>,
-    val divisibleBy : Int,
-    val ifTrue : Int,
-    val ifFalse: Int,
-    var inspected: Int = 0)
 
-fun main() {
+class Day11 {
+    data class Monkey(
+        val index: Int,
+        var items: List<Long>,
+        val operator: Pair<(Long, Long) -> Long, OrResult<Long, String>>,
+        val divisibleBy : Int,
+        val ifTrue : Int,
+        val ifFalse: Int,
+        var inspected: Int = 0)
+
     //  Monkey 0:
     //    Starting items: 79, 98
     //    Operation: new = old * 19
@@ -19,15 +20,15 @@ fun main() {
     //      If true: throw to monkey 2
     //      If false: throw to monkey 3
 
-    val index = ("Monkey " followedBy number()) + ":\n"
+    val index = "Monkey " followedBy number() followedBy  ":\n"
     val itemNumbers = number() map { it.toLong() } sepBy ", "
-    val items = ("  Starting items: " followedBy itemNumbers) + "\n"
+    val items = "  Starting items: " followedBy itemNumbers followedBy  "\n"
     val plus = "+ " asValue { n: Long, m: Long -> n + m }
     val times = "* " asValue { n: Long, m: Long -> n * m }
-    val operation = seq("  Operation: new = old " followedBy (plus or times), number() map { it.toLong() } or_ Literal("old")) + "\n"
-    val divisibleBy = ("  Test: divisible by " followedBy number()) + "\n"
-    val ifTrue = ("    If true: throw to monkey " followedBy number()) + "\n"
-    val ifFalse = ("    If false: throw to monkey " followedBy number()) + "\n"
+    val operation = seq("  Operation: new = old " followedBy (plus or times), number() map { it.toLong() } or_ Literal("old")) followedBy  "\n"
+    val divisibleBy = "  Test: divisible by " followedBy number() followedBy  "\n"
+    val ifTrue = "    If true: throw to monkey " followedBy number() followedBy  "\n"
+    val ifFalse = "    If false: throw to monkey " followedBy number() followedBy  "\n"
 
     val monkey = seq(index, items, operation, divisibleBy, ifTrue, ifFalse, ::Monkey)
     val monkeys = monkey sepBy "\n"
@@ -64,19 +65,6 @@ fun main() {
     fun part2(input: String): Long {
         return solve(input, 10000, 1)
     }
-    // test if implementation meets criteria from the description, like:/
-    val testInput = readFile(2022, 11, 1).readText()
-    val input = readFile(2022, 11).readText()
-    check(part1(testInput) == 10605L)
-
-    println(part1(input))
-    check(part1(input) == 54036L)
-
-    check(part2(testInput) == 2713310158)
-
-    println(part2(input))
-    check(part2(input) == 13237873355)
-
 }
 
 

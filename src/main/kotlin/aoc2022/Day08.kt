@@ -2,9 +2,9 @@ package aoc2022
 
 import aoc.*
 
-fun main() {
-    val row = zeroOrMore(digit())+"\n"
-    val parser = zeroOrMore(row)
+class Day08 {
+    val row = oneOrMore(digit()) followedBy "\n"
+    val parser = oneOrMore(row)
 
     fun part1(input: String): Int {
         val grid = parser.parse(input)
@@ -71,18 +71,5 @@ fun main() {
 
         return high
     }
-
-    // test if implementation meets criteria from the description, like:/
-    val testInput = readFile(2022, 8, 1).readText()
-    check(part1(testInput) == 21)
-    check(part2(testInput) == 8)
-
-    val input = readFile(2022, 8).readText()
-
-    println(part1(input))
-    check(part1(input) == 1698)
-    println(part2(input))
-    check(part2(input) == 672280)
-
 }
 
