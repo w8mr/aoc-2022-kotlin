@@ -54,7 +54,7 @@ class Day12 {
 
     val parser = zeroOrMore(
         (zeroOrMore(
-            (regex("[a-zSE]") map(::elevation))) + "\n").asArray()
+            (regex("[a-zSE]") map(::elevation))) followedBy "\n").asArray()
     ).asArray()
 
     fun part1(input: String): Int {

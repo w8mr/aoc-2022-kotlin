@@ -13,9 +13,9 @@ data class Box(val l: Int, val w: Int, val h: Int) {
 
 fun main() {
     val box = seq(
-        number()+"x",
-        number()+"x",
-        number()+"\n")
+        number() followedBy "x",
+        number() followedBy "x",
+        number() followedBy "\n")
     { l, w, h -> Box(l,w,h) }
     val boxes = zeroOrMore(box)
 

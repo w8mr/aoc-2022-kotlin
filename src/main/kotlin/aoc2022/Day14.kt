@@ -68,8 +68,8 @@ class Day14 {
     fun createLine(coords: List<Coord>): List<Line> =
         coords.zipWithNext(::Line)
 
-    val coord = seq(number() + ",", number(), ::Coord)
-    val line = (coord sepBy " -> ") + "\n" map ::createLine
+    val coord = seq(number() followedBy ",", number(), ::Coord)
+    val line = coord sepBy " -> " followedBy "\n" map ::createLine
     val lines = zeroOrMore(line) map { it.flatten() }
 
     private fun solve(lines: List<Line>): Int {

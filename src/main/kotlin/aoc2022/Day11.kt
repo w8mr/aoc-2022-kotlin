@@ -25,7 +25,7 @@ class Day11 {
     val items = "  Starting items: " followedBy itemNumbers followedBy  "\n"
     val plus = "+ " asValue { n: Long, m: Long -> n + m }
     val times = "* " asValue { n: Long, m: Long -> n * m }
-    val operation = seq("  Operation: new = old " followedBy (plus or times), number() map { it.toLong() } or_ Literal("old")) followedBy  "\n"
+    val operation = seq("  Operation: new = old " followedBy (plus or times), number() map { it.toLong() } or_ literal("old")) followedBy  "\n"
     val divisibleBy = "  Test: divisible by " followedBy number() followedBy  "\n"
     val ifTrue = "    If true: throw to monkey " followedBy number() followedBy  "\n"
     val ifFalse = "    If false: throw to monkey " followedBy number() followedBy  "\n"

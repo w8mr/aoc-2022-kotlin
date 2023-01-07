@@ -15,7 +15,7 @@ class Day16() {
         "Valve " followedBy regex("[A-Z]{2}"),
         " has flow rate=" followedBy number(),
         seq(
-            Literal("; tunnel leads to valve ") or Literal("; tunnels lead to valves "),
+            literal("; tunnel leads to valve ") or literal("; tunnels lead to valves "),
             regex("[A-Z]{2}") sepBy ", ") { _, result -> result },
         ::Valve) followedBy "\n"
 

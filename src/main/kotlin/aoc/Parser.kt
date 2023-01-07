@@ -16,17 +16,6 @@ class Context(val source: CharSequence, var index: Int = 0) {
 
     }
 }
-fun regex(pattern: String) = object: Parser<String>() {
-    override fun apply(context: Context): Result<String> {
-        if (context.index > context.source.length) return context.error("End of File")
-        val result = "^$pattern".toRegex().find(context.source.subSequence(context.index, context.source.length))
-        return when (result) {
-            null -> context.error("aoc.Regex not matched")
-            else -> context.success(result.value, result.value.length)
-        }
-    }
-}
-
 abstract class Parser<R> {
     sealed interface Result<R>
     data class Success<R>(val value: R) : Result<R>
@@ -41,22 +30,30 @@ abstract class Parser<R> {
         }
 }
 
+
+fun regex(pattern: String) = object: Parser<String>() {
+    override fun apply(context: Context): Result<String> {
+        if (context.index > context.source.length) return context.error("End of File")
+        val result = "^$pattern".toRegex().find(context.source.subSequence(context.index, context.source.length))
+        return when (result) {
+            null -> context.error("aoc.Regex not matched")
+            else -> context.success(result.value, result.value.length)
+        }
+    }
+}
+
 fun <R, T> Parser<R>.to(value: T) =
     this map { value }
 
 infix fun <R, T> Parser<R>.asValue(value: T) = this.to(value)
-infix fun <T> String.asValue(value: T) = Literal(this) asValue value
+infix fun <T> String.asValue(value: T) = literal(this) asValue value
 
 inline fun <reified R> Parser<List<R>>.asArray() = this map { it.toTypedArray() }
 
-
 operator fun <T> Parser<T>.plus(literal: String) =
-    seq(this, Literal(literal)) { v, _ -> v }
+    seq(this, literal(literal)) { v, _ -> v }
 
-//operator fun <T> String.plus(parser: Parser<T>) =
-//    seq(Literal(this), parser) { _, v -> v }
-
-class Literal(private val literal: String): Parser<String>() {
+fun literal(literal: String) = object: Parser<String>() {
     override fun apply(context: Context): Result<String> {
         if (context.index > context.source.length) return context.error("End of File")
         val result = context.source.subSequence(context.index, context.source.length).startsWith(literal)
@@ -78,7 +75,7 @@ infix fun <R,T> Parser<R>.map(map: (value: R) -> T): Parser<T> {
     }
 }
 
-infix fun <R> Parser<R>.sepBy(separator: String, ) = zeroOrMore(seq(this, optional(Literal(separator))) { result, _ -> result})
+infix fun <R> Parser<R>.sepBy(separator: String, ) = zeroOrMore(seq(this, optional(literal(separator))) { result, _ -> result})
 
 operator fun <R> Parser<R>.times(times: Int) = repeat(this, times, times)
 
@@ -152,7 +149,7 @@ fun <R: Enum<R>> byEnum(e: KClass<R>) =
     byEnum(e) { it -> it.name.lowercase() }
 
 fun <R: Enum<R>> byEnum(e: KClass<R>, f: (R) -> String): Parser<R> {
-    val parsers = EnumSet.allOf(e.java).map { Literal(f(it)).asValue(it) }.toTypedArray()
+    val parsers = EnumSet.allOf(e.java).map { literal(f(it)).asValue(it) }.toTypedArray()
     return oneOf(*parsers)
 }
 
@@ -176,22 +173,23 @@ sealed interface OrResult<out L, out R> {
     data class Left<L>(val value: L) : OrResult<L, Nothing>
     data class Right<R>(val value: R) : OrResult<Nothing, R>
 }
-class Or<L,R>(private val p1: Parser<L>, private val p2: Parser<R>): Parser<OrResult<L, R>>() {
-    override fun apply(context: Context): Result<OrResult<L, R>> =
-        when (val r1 = p1.apply(context)) {
-            is Success -> context.success(OrResult.Left(r1.value), 0)
-            is Error ->
-                when (val r2 = p2.apply(context)) {
-                    is Success -> context.success(OrResult.Right(r2.value), 0)
-                    is Error -> context.error("aoc.Or both failed")
-                }
-        }
+
+infix fun <L,R> Parser<L>.or_(p2: Parser<R>): Parser<OrResult<L, R>> {
+    val p1 = this
+    return object: Parser<OrResult<L, R>>() {
+        override fun apply(context: Context): Result<OrResult<L, R>> =
+            when (val r1 = p1.apply(context)) {
+                is Success -> context.success(OrResult.Left(r1.value), 0)
+                is Error ->
+                    when (val r2 = p2.apply(context)) {
+                        is Success -> context.success(OrResult.Right(r2.value), 0)
+                        is Error -> context.error("aoc.Or both failed")
+                    }
+            }
+    }
 }
 
-infix fun <L,R> Parser<L>.or_(other: Parser<R>): Parser<OrResult<L, R>> = Or(this, other)
-
-
-class EoF(): Parser<Unit>() {
+fun eoF() = object: Parser<Unit>() {
     override fun apply(context: Context): Result<Unit> =
         when  {
             context.index >= context.source.length -> context.success(Unit, 0 )
@@ -199,7 +197,7 @@ class EoF(): Parser<Unit>() {
         }
 }
 
-class Empty(): Parser<Unit>() {
+fun empty() = object: Parser<Unit>() {
     override fun apply(context: Context): Result<Unit> =
         context.success(Unit, 0)
 }
@@ -211,8 +209,10 @@ fun <R> ref(parserRef: KProperty0<Parser<R>>): Parser<R> = object : Parser<R>() 
 
 }
 
-infix fun <R> String.followedBy(parser: Parser<R>): Parser<R> = seq(Literal(this), parser) { _, result -> result}
-infix fun <R> Parser<R>.followedBy(literal: String): Parser<R> = seq(this, Literal(literal))  { result, _ -> result}
+infix fun <R> String.followedBy(parser: Parser<R>): Parser<R> = seq(literal(this), parser) { _, result -> result}
+infix fun <R> Parser<R>.followedBy(literal: String): Parser<R> = seq(this, literal(literal))  { result, _ -> result}
+
+infix fun <R, T> Parser<R>.followedBy(parser: Parser<T>): Parser<R> = seq(this, parser)  { result, _ -> result}
 
 fun number() = regex("-?\\d+") map { it.toInt() }
 fun digit() = regex("\\d") map { it.toInt() }
@@ -220,7 +220,7 @@ fun digit() = regex("\\d") map { it.toInt() }
 fun word() = regex("\\w+")
 
 fun <R> optional(p: Parser<R>) : Parser<R?> =
-    Or(p, Empty()) map { o ->
+    p or_  empty() map { o ->
         when (o) {
             is OrResult.Left -> o.value
             is OrResult.Right -> null

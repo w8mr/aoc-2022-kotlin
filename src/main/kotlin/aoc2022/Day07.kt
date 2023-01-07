@@ -19,16 +19,15 @@ class Day07() {
             get() = subNodes.sumOf { it.size }
     }
 
-    val fileEntry = seq(number(), Literal(" "), regex("[a-zA-Z./]+"), Literal("\n")) { size, _, n, _ -> FileNode(size, n) }
-    val dirEntry = seq(Literal("dir "), regex("[a-zA-Z./]+"), Literal("\n")) { _, n, _ -> DirNode(n) }
-    val fileDirEntry = seq(zeroOrMore(dirEntry), fileEntry, zeroOrMore(dirEntry)) { _, e, _ -> e}
-    val entry = fileDirEntry or ref(::dirListing)
-    val entries = zeroOrMore(entry)
-    val dirListing: Parser<Node> = seq(Literal("\$ cd "),
-        regex("[a-zA-Z/]+"),
-        Literal("\n\$ ls\n"),
-        entries,
-        Or(Literal("\$ cd ..\n"), EoF())) { _, n, _, e, _ -> DirNode(n, e) }
+    val fileEntry = seq(number() followedBy " ", regex("[a-zA-Z./]+") followedBy "\n", ::FileNode)
+    val dirEntry = "dir " followedBy regex("[a-zA-Z./]+") followedBy "\n" map(::DirNode)
+    val fileDirEntry = dirEntry or_ fileEntry map { it -> if (it is OrResult.Right) it.value else null }
+    val entry: Parser<Node?> = ref(::dirListing) or fileDirEntry
+    val entries = oneOrMore(entry) map { it.filterNotNull() }
+    val dirListing = seq(
+        "\$ cd " followedBy regex("[a-zA-Z/]+"),
+        "\n\$ ls\n" followedBy entries, ::DirNode) followedBy
+            (eoF() or literal("\$ cd ..\n"))
 
 
     fun part1(input: String): Int {
