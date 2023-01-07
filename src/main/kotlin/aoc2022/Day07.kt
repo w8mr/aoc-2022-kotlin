@@ -9,25 +9,24 @@ class Day07() {
         val subNodes: List<Node>
     }
 
-    data class FileNode(override val size: Int, val name: String): Node {
+    data class FileNode(override val size: Int, val name: String) : Node {
         override val subNodes: List<Node>
             get() = emptyList()
     }
 
-    data class DirNode(val name: String, override val subNodes: List<Node> = emptyList()): Node {
+    data class DirNode(val name: String, override val subNodes: List<Node> = emptyList()) : Node {
         override val size: Int
             get() = subNodes.sumOf { it.size }
     }
 
     val fileEntry = seq(number() followedBy " ", regex("[a-zA-Z./]+") followedBy "\n", ::FileNode)
-    val dirEntry = "dir " followedBy regex("[a-zA-Z./]+") followedBy "\n" map(::DirNode)
-    val fileDirEntry = dirEntry or_ fileEntry map { it -> if (it is OrResult.Right) it.value else null }
+    val dirEntry = "dir " followedBy regex("[a-zA-Z./]+") followedBy "\n" asValue null
+    val fileDirEntry = dirEntry or fileEntry
     val entry: Parser<Node?> = ref(::dirListing) or fileDirEntry
     val entries = oneOrMore(entry) map { it.filterNotNull() }
     val dirListing = seq(
         "\$ cd " followedBy regex("[a-zA-Z/]+"),
-        "\n\$ ls\n" followedBy entries, ::DirNode) followedBy
-            (eoF() or literal("\$ cd ..\n"))
+        "\n\$ ls\n" followedBy entries, ::DirNode) followedBy (eoF() or literal("\$ cd ..\n"))
 
 
     fun part1(input: String): Int {

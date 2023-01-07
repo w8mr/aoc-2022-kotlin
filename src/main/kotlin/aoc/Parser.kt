@@ -53,12 +53,12 @@ inline fun <reified R> Parser<List<R>>.asArray() = this map { it.toTypedArray() 
 operator fun <T> Parser<T>.plus(literal: String) =
     seq(this, literal(literal)) { v, _ -> v }
 
-fun literal(literal: String) = object: Parser<String>() {
-    override fun apply(context: Context): Result<String> {
+fun literal(literal: String) = object: Parser<Unit>() {
+    override fun apply(context: Context): Result<Unit> {
         if (context.index > context.source.length) return context.error("End of File")
         val result = context.source.subSequence(context.index, context.source.length).startsWith(literal)
         return when (result) {
-            true -> context.success(literal, literal.length)
+            true -> context.success(Unit, literal.length)
             false -> context.error("$literal not found")
         }
     }
@@ -78,6 +78,10 @@ infix fun <R,T> Parser<R>.map(map: (value: R) -> T): Parser<T> {
 infix fun <R> Parser<R>.sepBy(separator: String, ) = zeroOrMore(seq(this, optional(literal(separator))) { result, _ -> result})
 
 operator fun <R> Parser<R>.times(times: Int) = repeat(this, times, times)
+
+operator fun <R> Int.times(parser: Parser<R>) = repeat(parser, this, this)
+
+operator fun <R> IntRange.times(parser: Parser<R>) = repeat(parser, this.start, this.endInclusive)
 
 fun <R> oneOrMore(parser: Parser<R>): Parser<List<R>> = repeat(parser, min = 1)
 
@@ -169,20 +173,20 @@ fun <R> oneOf(vararg parsers: Parser<out R>) = object: Parser<R>() {
 
 infix fun <L> Parser<out L>.or(other: Parser<out L>): Parser<L> = oneOf(this, other)
 
-sealed interface OrResult<out L, out R> {
-    data class Left<L>(val value: L) : OrResult<L, Nothing>
-    data class Right<R>(val value: R) : OrResult<Nothing, R>
+sealed interface Either<out L, out R> {
+    data class Left<L>(val value: L) : Either<L, Nothing>
+    data class Right<R>(val value: R) : Either<Nothing, R>
 }
 
-infix fun <L,R> Parser<L>.or_(p2: Parser<R>): Parser<OrResult<L, R>> {
+infix fun <L,R> Parser<L>.or_(p2: Parser<R>): Parser<Either<L, R>> {
     val p1 = this
-    return object: Parser<OrResult<L, R>>() {
-        override fun apply(context: Context): Result<OrResult<L, R>> =
+    return object: Parser<Either<L, R>>() {
+        override fun apply(context: Context): Result<Either<L, R>> =
             when (val r1 = p1.apply(context)) {
-                is Success -> context.success(OrResult.Left(r1.value), 0)
+                is Success -> context.success(Either.Left(r1.value), 0)
                 is Error ->
                     when (val r2 = p2.apply(context)) {
-                        is Success -> context.success(OrResult.Right(r2.value), 0)
+                        is Success -> context.success(Either.Right(r2.value), 0)
                         is Error -> context.error("aoc.Or both failed")
                     }
             }
@@ -212,7 +216,10 @@ fun <R> ref(parserRef: KProperty0<Parser<R>>): Parser<R> = object : Parser<R>() 
 infix fun <R> String.followedBy(parser: Parser<R>): Parser<R> = seq(literal(this), parser) { _, result -> result}
 infix fun <R> Parser<R>.followedBy(literal: String): Parser<R> = seq(this, literal(literal))  { result, _ -> result}
 
-infix fun <R, T> Parser<R>.followedBy(parser: Parser<T>): Parser<R> = seq(this, parser)  { result, _ -> result}
+@JvmName("followedByUnit")
+infix fun <R> Parser<R>.followedBy(parser: Parser<Unit>) = seq(this, parser)  { result, _ -> result}
+
+infix fun <R,T> Parser<R>.followedBy(parser: Parser<T>) = seq(this, parser)
 
 fun number() = regex("-?\\d+") map { it.toInt() }
 fun digit() = regex("\\d") map { it.toInt() }
@@ -220,9 +227,9 @@ fun digit() = regex("\\d") map { it.toInt() }
 fun word() = regex("\\w+")
 
 fun <R> optional(p: Parser<R>) : Parser<R?> =
-    p or_  empty() map { o ->
+    p or_ empty() map { o ->
         when (o) {
-            is OrResult.Left -> o.value
-            is OrResult.Right -> null
+            is Either.Left -> o.value
+            is Either.Right -> null
         }
     }

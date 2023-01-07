@@ -4,10 +4,15 @@ import aoc.*
 
 
 class Day11 {
+    sealed class Argument {
+        data class Number(val value: Long) : Argument()
+        object Old : Argument()
+    }
+
     data class Monkey(
         val index: Int,
         var items: List<Long>,
-        val operator: Pair<(Long, Long) -> Long, OrResult<Long, String>>,
+        val operator: Pair<(Long, Long) -> Long, Argument>,
         val divisibleBy : Int,
         val ifTrue : Int,
         val ifFalse: Int,
@@ -25,7 +30,9 @@ class Day11 {
     val items = "  Starting items: " followedBy itemNumbers followedBy  "\n"
     val plus = "+ " asValue { n: Long, m: Long -> n + m }
     val times = "* " asValue { n: Long, m: Long -> n * m }
-    val operation = seq("  Operation: new = old " followedBy (plus or times), number() map { it.toLong() } or_ literal("old")) followedBy  "\n"
+    val numberArgument = number() map { Argument.Number(it.toLong()) }
+    val oldArgument = literal("old") asValue Argument.Old
+    val operation = seq("  Operation: new = old " followedBy (plus or times), numberArgument or oldArgument) followedBy  "\n"
     val divisibleBy = "  Test: divisible by " followedBy number() followedBy  "\n"
     val ifTrue = "    If true: throw to monkey " followedBy number() followedBy  "\n"
     val ifFalse = "    If false: throw to monkey " followedBy number() followedBy  "\n"
@@ -40,8 +47,8 @@ class Day11 {
             parsed.forEach {
                 it.items.forEach { item ->
                     val right: Long = when (val r = it.operator.second) {
-                        is OrResult.Left -> r.value
-                        is OrResult.Right -> item
+                        is Argument.Number -> r.value
+                        is Argument.Old -> item
                     }
                     val new = (it.operator.first(item, right) / d) % ring
                     if (new % it.divisibleBy == 0L) {
