@@ -22,7 +22,7 @@ private fun <T,R> T.runSafe(code: T.() -> R): RunSafeResult {
 private fun RunSafeResult.handle(year: Int, day: Int, part: Int, print: Boolean, expected: Any? = null) {
     when (this) {
         is RunSafeResult.Success<*> -> {
-            if (print) println("Year $year day $day part $part: ${this.value}")
+            if (print) println("Year $year day $day part $part: $value")
             if (expected != null) {
                 assertEquals(expected, this.value)
             }

@@ -37,6 +37,11 @@ fun <A> List<A>.split(predicate: (A) -> Boolean): List<List<A>> {
     return go(this)
 }
 
+fun <T : Any> T.println(): T {
+    println(this)
+    return this
+}
+
 fun <T> List<List<T>>.transpose(): List<List<T>> {
     // Helpers
     fun <T> List<T>.tail(): List<T> = this.takeLast(this.size - 1)
