@@ -53,6 +53,8 @@ class Day22() {
             }
     }
 
+    fun Array<Array<GridType>>.cell(state: State) =
+        this.getOrElse(state.y) { arrayOf() }.getOrElse(state.x) { GridType.EMPTY }
 
     fun solve(input: String, handleEmpty: (grid: Array<Array<GridType>>, oldState: State, newState: State) -> State): Int {
         val (grid, instructions) = parser.parse(input)
@@ -271,6 +273,4 @@ private fun testCubeMap(): Map<Pair<Int, Int>, Map<Day22.Dir, Pair<Pair<Int, Int
     return cubeMap
 }
 
-fun Array<Array<Day22.GridType>>.cell(state: Day22.State) =
-    this.getOrElse(state.y) { arrayOf() }.getOrElse(state.x) { Day22.GridType.EMPTY }
 
