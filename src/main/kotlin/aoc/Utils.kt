@@ -139,6 +139,28 @@ fun <T> getCombinations(list: Collection<T>, n: Int): List<List<T>> {
 
 }
 
+fun <T: Any> Sequence<T>.zipNextPrevious(startEnd: T? = null, start: T? = null, end: T? = null): Sequence<Triple<T,T,T>> {
+    if ((startEnd != null) && (start!=null) || (end!=null)) throw IllegalArgumentException("either set startEnd or start and/or end")
+    val s = startEnd ?: start
+    val e = startEnd ?: start
+    val seq = if (s != null) {
+        if (e != null) {
+            sequenceOf(s) + this + sequenceOf(e)
+        } else {
+            sequenceOf(s) + this
+        }
+    } else {
+        if (e != null) {
+            this + sequenceOf(e)
+        } else {
+            this
+        }
+
+    }
+    return seq.zipWithNext().zipWithNext { a, b -> Triple(a.first, a.second, b.second) }
+}
+
+
 
 
 
