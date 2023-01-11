@@ -2,54 +2,41 @@ package aoc2022
 
 import aoc.parser.*
 import aoc.parser.Parsers.eol
-import aoc2022.Day02.Item.*
-import aoc2022.Day02.Result.*
 
 class Day02() {
-    enum class Item(val name1: String, val name2: String) {
-        ROCK("A", "X"),
-        PAPER("B", "Y"),
-        SCISSOR("C", "Z"),
+    enum class Item(val name1: String, val name2: String, val score: Int) {
+        ROCK("A", "X", 1),
+        PAPER("B", "Y", 2),
+        SCISSOR("C", "Z", 3),
     }
 
-    enum class Result(val name1: String) {
-        LOSE("X"),
-        DRAW("Y"),
-        WIN("Z")
+    enum class Result(val name1: String, val score: Int) {
+        LOSE("X", 0),
+        DRAW("Y", 3),
+        WIN("Z", 6)
     }
 
-    val score = mapOf(
-        Pair(Pair(ROCK, ROCK), 3 + 1),
-        Pair(Pair(ROCK, PAPER), 6 + 2),
-        Pair(Pair(ROCK, SCISSOR), 0 + 3),
-        Pair(Pair(PAPER, ROCK), 0 + 1),
-        Pair(Pair(PAPER, PAPER), 3 + 2),
-        Pair(Pair(PAPER, SCISSOR), 6 + 3),
-        Pair(Pair(SCISSOR, ROCK), 6 + 1),
-        Pair(Pair(SCISSOR, PAPER), 0 + 2),
-        Pair(Pair(SCISSOR, SCISSOR), 3 + 3),
-    )
+    /**
+        pair of items
+        @result if second wins, looses or draw of first
+     */
+    fun result(input: Pair<Item, Item>): Result =
+        Result.values()[(input.second.ordinal-input.first.ordinal+1).mod(3)]
 
-    val needToWinMap = mapOf(
-        Pair(Pair(ROCK, LOSE), SCISSOR),
-        Pair(Pair(ROCK, DRAW), ROCK),
-        Pair(Pair(ROCK, WIN), PAPER),
-        Pair(Pair(PAPER, LOSE), ROCK),
-        Pair(Pair(PAPER, DRAW), PAPER),
-        Pair(Pair(PAPER, WIN), SCISSOR),
-        Pair(Pair(SCISSOR, LOSE), PAPER),
-        Pair(Pair(SCISSOR, DRAW), SCISSOR),
-        Pair(Pair(SCISSOR, WIN), ROCK),
-    )
+    fun needsTo(input: Pair<Item, Result>): Item =
+        Item.values()[(input.second.ordinal+input.first.ordinal-1).mod(3)]
+
+    fun score1(input: Pair<Item, Item>) =
+        result(input).score + input.second.score
 
     fun scores2(input: Pair<Item, Result>): Int {
-        val i2 = needToWinMap[Pair(input.first, input.second)]
-        return score[Pair(input.first, i2)] ?: 0
+        val you = needsTo(input)
+        return score1(Pair(input.first, you))
     }
 
     fun part1(input: String): Int {
         val parsed = parser1(input)
-        return parsed.sumOf { score.getValue(it) }
+        return parsed.sumOf(::score1)
     }
 
     fun part2(input: String): Int {
@@ -58,8 +45,8 @@ class Day02() {
     }
 
     val col1 = Item::class.asParser(Item::name1)
-    val col2_part1 = Item::class.asParser(Item::name2)
-    val col2_part2 = Result::class.asParser(Result::name1)
-    val parser1 = zeroOrMore(seq(col1 and " ", col2_part1 and eol))
-    val parser2 = zeroOrMore(seq(col1 and " ", col2_part2 and eol))
+    val col2Part1 = Item::class.asParser(Item::name2)
+    val col2Part2 = Result::class.asParser(Result::name1)
+    val parser1 = zeroOrMore(seq(col1 and " ", col2Part1 and eol))
+    val parser2 = zeroOrMore(seq(col1 and " ", col2Part2 and eol))
 }

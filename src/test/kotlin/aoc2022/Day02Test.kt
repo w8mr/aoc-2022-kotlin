@@ -2,6 +2,7 @@ package aoc2022
 
 import kotlin.test.Test
 import aoc.*
+import kotlin.test.assertTrue
 
 
 internal class Day02Test {
@@ -31,5 +32,40 @@ internal class Day02Test {
     @Test
     fun testPart2RealInput() {
         subject.testSafe(year, day, 2, true, 13022) { part2(input) }
+    }
+
+    @Test
+    fun resultWin1() {
+        assertTrue { Day02().result(Pair(Day02.Item.SCISSOR, Day02.Item.ROCK)) == Day02.Result.WIN }
+    }
+
+    @Test
+    fun resultWin2() {
+        assertTrue { Day02().result(Pair(Day02.Item.PAPER, Day02.Item.SCISSOR)) == Day02.Result.WIN }
+    }
+
+    @Test
+    fun resultLose() {
+        assertTrue { Day02().result(Pair(Day02.Item.PAPER, Day02.Item.ROCK)) == Day02.Result.LOSE }
+    }
+
+    @Test
+    fun resultDraw() {
+        assertTrue { Day02().result(Pair(Day02.Item.PAPER, Day02.Item.PAPER)) == Day02.Result.DRAW }
+    }
+
+    @Test
+    fun needsToWin() {
+        assertTrue { Day02().needsTo(Pair(Day02.Item.PAPER, Day02.Result.WIN)) == Day02.Item.SCISSOR }
+    }
+
+    @Test
+    fun needsToDraw() {
+        assertTrue { Day02().needsTo(Pair(Day02.Item.PAPER, Day02.Result.DRAW)) == Day02.Item.PAPER }
+    }
+
+    @Test
+    fun needsToLose() {
+        assertTrue { Day02().needsTo(Pair(Day02.Item.PAPER, Day02.Result.LOSE)) == Day02.Item.ROCK }
     }
 }
