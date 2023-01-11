@@ -164,9 +164,14 @@ fun <R: Enum<R>> byEnum(e: KClass<R>) =
     byEnum(e) { it -> it.name.lowercase() }
 
 fun <R: Enum<R>> byEnum(e: KClass<R>, f: (R) -> String): Parser<R> {
-    val parsers = EnumSet.allOf(e.java).map { literal(f(it)).asValue(it) }.toTypedArray()
+    val parsers = EnumSet.allOf(e.java).map { literal(f(it!!)).asValue(it) }.toTypedArray()
     return oneOf(*parsers)
 }
+
+fun <R: Enum<R>> KClass<R>.asParser(f: (R) -> String) =
+    oneOf(*EnumSet.allOf(java).map { literal(f(it)).asValue(it!!) }.toTypedArray())
+
+fun <R: Enum<R>> KClass<R>.asParser() = this.asParser { it.name.lowercase() }
 
 
 fun <R> oneOf(vararg parsers: Parser<out R>) = object: Parser<R>() {
@@ -226,11 +231,17 @@ fun <R> ref(parserRef: KProperty0<Parser<R>>): Parser<R> = object : Parser<R>() 
 
 infix fun <R> String.followedBy(parser: Parser<R>): Parser<R> = seq(literal(this), parser) { _, result -> result}
 infix fun <R> Parser<R>.followedBy(literal: String): Parser<R> = seq(this, literal(literal))  { result, _ -> result}
+infix fun <R> String.and(parser: Parser<R>): Parser<R> = seq(literal(this), parser) { _, result -> result}
+infix fun <R> Parser<R>.and(literal: String): Parser<R> = seq(this, literal(literal))  { result, _ -> result}
 
 @JvmName("followedByUnit")
 infix fun <R> Parser<R>.followedBy(parser: Parser<Unit>) = seq(this, parser)  { result, _ -> result}
 
 infix fun <R,T> Parser<R>.followedBy(parser: Parser<T>) = seq(this, parser)
+@JvmName("andUnit")
+infix fun <R> Parser<R>.and(parser: Parser<Unit>) = seq(this, parser)  { result, _ -> result}
+
+infix fun <R,T> Parser<R>.and(parser: Parser<T>) = seq(this, parser)
 
 fun number() = regex("-?\\d+") map { it.toInt() }
 fun digit() = regex("\\d") map { it.toInt() }
