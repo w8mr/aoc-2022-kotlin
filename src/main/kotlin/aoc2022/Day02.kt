@@ -1,6 +1,9 @@
 package aoc2022
 
-import aoc.*
+import aoc.parser.byEnum
+import aoc.parser.followedBy
+import aoc.parser.seq
+import aoc.parser.zeroOrMore
 
 class Day02() {
     enum class Item(val name1: String, val name2: String) {

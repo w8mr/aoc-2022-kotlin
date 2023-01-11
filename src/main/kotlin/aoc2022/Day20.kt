@@ -1,6 +1,8 @@
 package aoc2022
 
-import aoc.*
+import aoc.parser.followedBy
+import aoc.parser.number
+import aoc.parser.zeroOrMore
 
 class Day20() {
     val parser = zeroOrMore(number() followedBy "\n")

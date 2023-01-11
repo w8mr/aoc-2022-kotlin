@@ -1,6 +1,9 @@
 package aoc.aoc2015
 
 import aoc.*
+import aoc.parser.asValue
+import aoc.parser.oneOf
+import aoc.parser.oneOrMore
 import kotlin.reflect.KFunction1
 
 fun main() {

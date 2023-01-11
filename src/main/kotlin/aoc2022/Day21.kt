@@ -1,6 +1,6 @@
 package aoc2022
 
-import aoc.*
+import aoc.parser.*
 
 class Day21() {
     enum class Operation(val text: String, val function: (Double, Double) -> Double){

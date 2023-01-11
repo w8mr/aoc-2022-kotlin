@@ -1,6 +1,7 @@
 package aoc2022
 
 import aoc.*
+import aoc.parser.*
 
 class Day05() {
     sealed interface Crate {

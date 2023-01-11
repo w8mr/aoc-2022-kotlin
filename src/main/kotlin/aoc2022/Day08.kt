@@ -1,6 +1,9 @@
 package aoc2022
 
 import aoc.*
+import aoc.parser.digit
+import aoc.parser.followedBy
+import aoc.parser.oneOrMore
 
 class Day08 {
     val row = oneOrMore(digit()) followedBy "\n"

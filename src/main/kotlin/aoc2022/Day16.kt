@@ -1,6 +1,7 @@
 package aoc2022
 
 import aoc.*
+import aoc.parser.*
 import kotlin.math.absoluteValue
 
 private const val empty: Int = Int.MAX_VALUE

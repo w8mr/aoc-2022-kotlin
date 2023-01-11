@@ -1,6 +1,10 @@
 package aoc2022
 
 import aoc.*
+import aoc.parser.asArray
+import aoc.parser.byEnum
+import aoc.parser.followedBy
+import aoc.parser.oneOrMore
 import java.util.*
 
 class Day24() {

@@ -1,4 +1,4 @@
-package aoc
+package aoc.parser
 
 import java.lang.IllegalArgumentException
 import java.util.EnumSet
@@ -7,7 +7,14 @@ import kotlin.reflect.KProperty0
 
 class Context(val source: CharSequence, var index: Int = 0) {
     fun <R> error(message: String = "Unknown"): Parser.Result<R> {
-        return Parser.Error("$message at position $index (${source.subSequence(index, index+minOf(source.length - index, 15))})")
+        return Parser.Error(
+            "$message at position $index (${
+                source.subSequence(
+                    index,
+                    index + minOf(source.length - index, 15)
+                )
+            })"
+        )
     }
 
     fun <R> success(value: R, length: Int): Parser.Result<R> {

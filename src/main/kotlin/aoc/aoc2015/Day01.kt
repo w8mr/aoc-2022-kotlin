@@ -1,6 +1,9 @@
 package aoc.aoc2015
 
 import aoc.*
+import aoc.parser.asValue
+import aoc.parser.oneOrMore
+import aoc.parser.or
 
 fun main() {
     val up = "(" asValue 1

@@ -1,6 +1,7 @@
 package aoc2022
 
 import aoc.*
+import aoc.parser.*
 import java.lang.IllegalArgumentException
 
 typealias Grid<T> = Array<Array<T>>

@@ -1,6 +1,10 @@
 package aoc2022
 
 import aoc.*
+import aoc.parser.followedBy
+import aoc.parser.number
+import aoc.parser.seq
+import aoc.parser.zeroOrMore
 import kotlin.math.absoluteValue
 
 class Day15() {

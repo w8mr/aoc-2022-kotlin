@@ -1,6 +1,9 @@
 package aoc2022
 
-import aoc.*
+import aoc.parser.followedBy
+import aoc.parser.map
+import aoc.parser.oneOrMore
+import aoc.parser.regex
 
 class Day25 {
     val SnafuDigits = "=-012"

@@ -1,6 +1,6 @@
 package aoc2022
 
-import aoc.*
+import aoc.parser.*
 
 class Day22() {
     enum class GridType(val text: String) {

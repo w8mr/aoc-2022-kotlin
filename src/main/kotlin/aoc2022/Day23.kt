@@ -1,6 +1,9 @@
 package aoc2022
 
 import aoc.*
+import aoc.parser.byEnum
+import aoc.parser.followedBy
+import aoc.parser.oneOrMore
 
 class Day23() {
     enum class GridType(val text: String) {

@@ -1,6 +1,10 @@
 package aoc2022
 
 import aoc.*
+import aoc.parser.followedBy
+import aoc.parser.map
+import aoc.parser.regex
+import aoc.parser.zeroOrMore
 
 class Day03() {
     fun Char.score(): Int =

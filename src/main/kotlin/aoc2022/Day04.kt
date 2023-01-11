@@ -1,6 +1,9 @@
 package aoc2022
 
-import aoc.*
+import aoc.parser.followedBy
+import aoc.parser.number
+import aoc.parser.seq
+import aoc.parser.zeroOrMore
 
 class Day04() {
     data class Zone(val start: Int, val end: Int) {

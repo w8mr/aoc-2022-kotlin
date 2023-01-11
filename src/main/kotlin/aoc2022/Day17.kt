@@ -1,6 +1,9 @@
 package aoc2022
 
-import aoc.*
+import aoc.parser.asValue
+import aoc.parser.followedBy
+import aoc.parser.or
+import aoc.parser.zeroOrMore
 
 class Day17() {
 
