@@ -1,13 +1,11 @@
 package aoc2022
 
 import aoc.*
-import aoc.parser.followedBy
-import aoc.parser.map
-import aoc.parser.regex
-import aoc.parser.zeroOrMore
+import aoc.parser.*
+import aoc.parser.Parsers.eol
 
 class Day03() {
-    fun Char.score(): Int =
+    fun Char.score() =
         when (this) {
             in 'a'..'z' -> this - 'a' + 1
             in 'A'..'Z' -> this - 'A' + 27
@@ -19,17 +17,16 @@ class Day03() {
     }
 
     fun part1(input: String): Int {
-        val parsed = parser.parse(input)
+        val parsed = parser(input)
         return findCommonItemAndScore(parsed.map { it.chunked(it.size / 2) })
     }
 
     fun part2(input: String): Int {
-        val parsed = parser.parse(input)
+        val parsed = parser(input)
         return findCommonItemAndScore(parsed.chunked(3))
     }
 
-    val line = regex("[a-zA-Z]*") followedBy "\n"
-    val bag = line map String::toList
-    val parser = zeroOrMore(bag)
+    val bag = regex("[a-zA-Z]*") map String::toList
+    val parser = oneOrMore(bag and eol)
 }
 
