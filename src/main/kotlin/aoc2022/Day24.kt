@@ -21,17 +21,15 @@ class Day24() {
     val line = oneOrMore(gridtype).asArray() followedBy "\n"
     val parser = oneOrMore(line).asArray()
 
-    fun part1(input: String): Int {
-        val parsed = parser.parse(input)
-
+    private fun setup(parsed: Array<Array<GridType>>): MutableMap<Int, Array<BooleanArray>> {
         val withoutWalls = parsed.drop(1).dropLast(1).map { it.drop(1).dropLast(1) }
         val width = withoutWalls[0].size
         val height = withoutWalls.size
 
-        val grids = listOf(GridType.UP, GridType.DOWN, GridType.LEFT, GridType.RIGHT).map {gt ->
-            gt to withoutWalls.map { it.map { if (it == gt) gt else GridType.EMPTY}}
+        val grids = listOf(GridType.UP, GridType.DOWN, GridType.LEFT, GridType.RIGHT).map { gt ->
+            gt to withoutWalls.map { it.map { if (it == gt) gt else GridType.EMPTY } }
         }.toMap()
-/*        grids.values.forEach {
+        /*        grids.values.forEach {
             println(it.map { it.map(GridType::text).joinToString("") }.joinToString("\n")+"\n")
         }
 */
@@ -54,15 +52,22 @@ class Day24() {
                 }
             }
         }
-/*        (0..10).forEach { time ->
+        /*        (0..10).forEach { time ->
             println("\nRound $time\n")
             blocked.getValue(time).joinToString("\n") { row -> row.map { if (it) '*' else '.' }.joinToString("") }.println()
 
         }
 */
+        return blocked
+    }
 
-        val initialState = State(0, -1, 0)
-
+    private fun solve(
+        blocked: MutableMap<Int, Array<BooleanArray>>,
+        initialState: State,
+        stopRow: Int
+    ): State {
+        val width = blocked.getValue(0)[0].size
+        val height = blocked.getValue(0).size
         val queue: Queue<State> = LinkedList()
         val seen = mutableSetOf<State>()
 
@@ -70,6 +75,8 @@ class Day24() {
 
         var bestState = initialState
 
+        val validRows = 0 until height
+        val validCols = 0 until width
 
         while (queue.isNotEmpty()) {
             val state = queue.remove()
@@ -81,10 +88,10 @@ class Day24() {
             val newTime = time + 1
             val blockNow = blocked.getValue(newTime % blocked.size)
 
-            val validRows = 0 until height
-            val validCols = 0 until width
             fun isValidAndNotBlocked(row: Int, col: Int) =
-                (row == -1 && col == 0) || (row == height && col == width - 1) || (row in validRows && col in validCols) && !blockNow.get(row).get(col)
+                (row == -1 && col == 0) || (row == height && col == width - 1) || (row in validRows && col in validCols) && !blockNow.get(
+                    row
+                ).get(col)
 
             fun add(
                 row: Int,
@@ -96,7 +103,7 @@ class Day24() {
             }
 
 
-            if (row == height && col == width - 1) {
+            if (row == stopRow) {
                 bestState = state
                 break
             } else {
@@ -108,12 +115,30 @@ class Day24() {
             }
         }
 
-        return bestState.time
+        return bestState
+    }
+
+    fun part1(input: String): Int {
+        val parsed = parser.parse(input)
+
+        val blocked = setup(parsed)
+        val height = blocked.getValue(0).size
+
+        val initialState = State(0, -1, 0)
+        return solve(blocked, initialState, height).time
     }
 
 
     fun part2(input: String): Int {
-        return TODO()
+        val parsed = parser.parse(input)
+
+        val blocked = setup(parsed)
+        val height = blocked.getValue(0).size
+
+        val initialState = State(0, -1, 0)
+        val atEndState = solve(blocked, initialState, height)
+        val atBeginState = solve(blocked, atEndState, -1)
+        return solve(blocked, atBeginState, height).time
     }
 }
 
