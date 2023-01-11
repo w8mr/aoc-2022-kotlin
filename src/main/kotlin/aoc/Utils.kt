@@ -160,6 +160,22 @@ fun <T: Any> Sequence<T>.zipNextPrevious(startEnd: T? = null, start: T? = null, 
     return seq.zipWithNext().zipWithNext { a, b -> Triple(a.first, a.second, b.second) }
 }
 
+fun Int.gcd(other: Int): Int = if (other == 0) this else other.gcd(this % other)
+fun Long.gcd(other: Long): Long = if (other == 0L) this else other.gcd(this % other)
+
+fun Int.gcd(vararg others: Int) = others.fold(this) { acc, n -> acc.gcd(n) }
+fun Long.gcd(vararg others: Long) = others.fold(this) { acc, n -> acc.gcd(n) }
+
+fun Int.lcm(other: Int) = this / this.gcd(other) * other
+fun Long.lcm(other: Long) = this / this.gcd(other) * other
+
+fun Int.lcm(vararg others:Int) = others.fold(this) { acc, n -> acc.lcm(n) }
+fun Long.lcm(vararg others:Long) = others.fold(this) { acc, n -> acc.lcm(n) }
+
+
+
+
+
 
 
 
