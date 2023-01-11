@@ -1,12 +1,12 @@
 package aoc2022
 
 import aoc.*
-import aoc.parser.number
+import aoc.parser.Parsers.number
 import aoc.parser.sepBy
 
 class Day01() {
 
-    val elf = number() sepBy "\n"
+    val elf = number sepBy "\n"
     val parser = elf sepBy "\n"
 
     fun sumCaloriesByElf(input: List<List<Int>>) =
