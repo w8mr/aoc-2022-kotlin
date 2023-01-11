@@ -28,6 +28,8 @@ abstract class Parser<R> {
             is Success -> result.value
             is Error -> throw IllegalArgumentException(result.error)
         }
+
+    operator fun invoke(source: CharSequence) = parse(source)
 }
 
 

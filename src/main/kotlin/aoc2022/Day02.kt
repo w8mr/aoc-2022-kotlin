@@ -3,17 +3,18 @@ package aoc2022
 import aoc.*
 
 class Day02() {
-    enum class Item {
-        ROCK,
-        PAPER,
-        SCISSOR
+    enum class Item(val name1: String, val name2: String) {
+        ROCK("A", "X"),
+        PAPER("B", "Y"),
+        SCISSOR("C", "Z"),
     }
 
-    enum class Result {
-        LOSE,
-        DRAW,
-        WIN
+    enum class Result(val name1: String) {
+        LOSE("X"),
+        DRAW("Y"),
+        WIN("Z")
     }
+
     val score = mapOf(
         Pair(Pair(Item.ROCK, Item.ROCK), 3 + 1),
         Pair(Pair(Item.ROCK, Item.PAPER), 6 + 2),
@@ -44,31 +45,18 @@ class Day02() {
     }
 
     fun part1(input: String): Int {
-        val parser = zeroOrMore(seq(col1 followedBy " ", col2_part1 followedBy "\n"))
-        val parsed = parser.parse(input)
-        return parsed.map { score[it] ?: 0 }.sum()
+        val parsed = parser1(input)
+        return parsed.sumOf { score.getValue(it) }
     }
 
     fun part2(input: String): Int {
-        val parser = zeroOrMore(seq(col1 followedBy " ", col2_part2 followedBy "\n"))
-        val parsed = parser.parse(input)
-        return parsed.map(::scores2).sum()
+        val parsed = parser2(input)
+        return parsed.sumOf(::scores2)
     }
 
-    val col1 = oneOf(
-        "A" asValue Item.ROCK,
-        "B" asValue Item.PAPER,
-        "C" asValue Item.SCISSOR
-    )
-    val col2_part1 = oneOf(
-        "X" asValue Item.ROCK,
-        "Y" asValue Item.PAPER,
-        "Z" asValue Item.SCISSOR
-    )
-
-    val col2_part2 = oneOf(
-        "X" asValue Result.LOSE,
-        "Y" asValue Result.DRAW,
-        "Z" asValue Result.WIN
-    )
+    val col1 = byEnum(Item::class, Item::name1)
+    val col2_part1 = byEnum(Item::class, Item::name2)
+    val col2_part2 = byEnum(Result::class, Result::name1)
+    val parser1 = zeroOrMore(seq(col1 followedBy " ", col2_part1 followedBy "\n"))
+    val parser2 = zeroOrMore(seq(col1 followedBy " ", col2_part2 followedBy "\n"))
 }
