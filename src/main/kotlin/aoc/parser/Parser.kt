@@ -84,7 +84,9 @@ infix fun <R,T> Parser<R>.map(map: (value: R) -> T): Parser<T> {
     }
 }
 
-infix fun <R> Parser<R>.sepBy(separator: String, ) = zeroOrMore(seq(this, optional(literal(separator))) { result, _ -> result})
+infix fun <R> Parser<R>.sepBy(separator: String) = zeroOrMore(seq(this, optional(literal(separator))) { result, _ -> result})
+
+infix fun <R> Parser<R>.sepBy(separator: Parser<Unit>) = zeroOrMore(seq(this, optional(separator)) { result, _ -> result})
 
 operator fun <R> Parser<R>.times(times: Int) = repeat(this, times, times)
 
