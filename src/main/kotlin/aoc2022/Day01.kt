@@ -8,7 +8,7 @@ class Day01() {
     val elfs = elf sepBy "\n"
 
     fun sumCaloriesByElf(input: List<List<Int>>) =
-        input.map { it.sum() }
+        input.map(List<Int>::sum)
 
     fun part1(input: String): Int {
         val parsed = elfs.parse(input)
@@ -17,7 +17,7 @@ class Day01() {
 
     fun part2(input: String): Int {
         val parsed = elfs.parse(input)
-        return sumCaloriesByElf(parsed).sorted().reversed().take(3).sum()
+        return sumCaloriesByElf(parsed).sortedDescending().take(3).sum()
     }
 
 }
