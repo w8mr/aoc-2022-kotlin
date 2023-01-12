@@ -140,9 +140,10 @@ fun <T> getCombinations(list: Collection<T>, n: Int): List<List<T>> {
 }
 
 fun <T: Any> Sequence<T>.zipNextPrevious(startEnd: T? = null, start: T? = null, end: T? = null): Sequence<Triple<T,T,T>> {
-    if ((startEnd != null) && (start!=null) || (end!=null)) throw IllegalArgumentException("either set startEnd or start and/or end")
+    //TODO: check conditions
+    if ((startEnd != null) && (start!=null) && (end!=null)) throw IllegalArgumentException("either set startEnd or start and/or end")
+    val e = startEnd ?: end
     val s = startEnd ?: start
-    val e = startEnd ?: start
     val seq = if (s != null) {
         if (e != null) {
             sequenceOf(s) + this + sequenceOf(e)
@@ -172,6 +173,8 @@ fun Long.lcm(other: Long) = this / this.gcd(other) * other
 fun Int.lcm(vararg others:Int) = others.fold(this) { acc, n -> acc.lcm(n) }
 fun Long.lcm(vararg others:Long) = others.fold(this) { acc, n -> acc.lcm(n) }
 
+operator fun Int.times(c: Char) =
+    c.toString().repeat(this)
 
 
 
