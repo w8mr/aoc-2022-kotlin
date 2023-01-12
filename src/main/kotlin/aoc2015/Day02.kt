@@ -22,13 +22,13 @@ class Day02() {
         number and eol,
         ::Box
     )
-    val boxes = oneOrMore(box)
+    val parser = oneOrMore(box)
 
     fun part1(input: String): Int {
-        return boxes.parse(input).map(Box::wrappingPaper).sum()
+        return parser(input).map(Box::wrappingPaper).sum()
     }
 
     fun part2(input: String): Int {
-        return boxes.parse(input).map(Box::ribbonLint).sum()
+        return parser(input).map(Box::ribbonLint).sum()
     }
 }
