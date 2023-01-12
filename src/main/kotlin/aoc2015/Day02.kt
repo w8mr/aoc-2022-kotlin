@@ -1,27 +1,28 @@
 package aoc2015
 
-import aoc.*
-import aoc.parser.followedBy
-import aoc.parser.number
+import aoc.parser.Parsers.eol
+import aoc.parser.Parsers.number
+import aoc.parser.and
+import aoc.parser.oneOrMore
 import aoc.parser.seq
-import aoc.parser.zeroOrMore
 
-data class Box(val l: Int, val w: Int, val h: Int) {
-    fun wrappingPaper(): Int {
-        return 2*(l*w+l*h+w*h)+Math.min(Math.min(l*w, l*h), h*w)
+class Day02() {
+    data class Box(val l: Int, val w: Int, val h: Int) {
+        fun wrappingPaper(): Int {
+            return 2 * (l * w + l * h + w * h) + Math.min(Math.min(l * w, l * h), h * w)
+        }
+        fun ribbonLint(): Int {
+            return 2 * Math.min(Math.min(l + w, l + h), h + w) + l * w * h
+        }
     }
-    fun ribbonLint(): Int {
-        return 2*Math.min(Math.min(l+w, l+h), h+w)+l*w*h
-    }
-}
 
-fun main() {
     val box = seq(
-        number() followedBy "x",
-        number() followedBy "x",
-        number() followedBy "\n")
-    { l, w, h -> Box(l,w,h) }
-    val boxes = zeroOrMore(box)
+        number and "x",
+        number and "x",
+        number and eol,
+        ::Box
+    )
+    val boxes = oneOrMore(box)
 
     fun part1(input: String): Int {
         return boxes.parse(input).map(Box::wrappingPaper).sum()
@@ -30,19 +31,4 @@ fun main() {
     fun part2(input: String): Int {
         return boxes.parse(input).map(Box::ribbonLint).sum()
     }
-
-    check(part1("2x3x4\n") == 58)
-    check(part1("1x1x10\n") == 43)
-
-    val input = readFile(2015, 2).readText()
-    check(part1(input) == 1588178)
-    println(part1(input))
-
-    check(part2("2x3x4\n") == 34)
-    check(part2("1x1x10\n") == 14)
-
-    check(part2(input) == 3783758)
-    println(part2(input))
-
 }
-
