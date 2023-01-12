@@ -21,4 +21,3 @@ class Day01() {
             .size
     }
 }
-
