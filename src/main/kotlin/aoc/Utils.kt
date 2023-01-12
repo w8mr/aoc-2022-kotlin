@@ -78,14 +78,12 @@ fun union(r: List<IntRange>): List<IntRange> {
     return merged.first + listOf(merged.second)
 }
 
-
-
 fun <T> getCombinationPairs(list: List<T>, n: Int): List<Pair<List<T>, List<T>>> {
     val m = list.size
     val result = mutableListOf<Pair<List<T>, List<T>>>()
 
     fun go(n: Int, indexes: IntArray, start: Int, index: Int) {
-        for (i in start..(m-1)) {
+        for (i in start..(m - 1)) {
             indexes[index] = i
             //         println("indexes: ${indexes.toList()}, start: ${start}, index: ${index}")
             val newIndex = index + 1
@@ -95,19 +93,17 @@ fun <T> getCombinationPairs(list: List<T>, n: Int): List<Pair<List<T>, List<T>>>
                 //           println("added: $pair1")
                 result.add(pair1)
             } else {
-                go(n, indexes, i+1, newIndex)
+                go(n, indexes, i + 1, newIndex)
             }
         }
     }
     for (j in 1..n) {
         go(j, IntArray(j), 0, 0)
-
     }
     return result
-
 }
 
-fun  Iterable<Int>.product() = this.fold(1) { acc, v -> acc * v }
+fun Iterable<Int>.product() = this.fold(1) { acc, v -> acc * v }
 
 fun <T> getCombinations(list: Collection<T>): List<List<T>> =
     getCombinations(list, list.size)
@@ -117,7 +113,7 @@ fun <T> getCombinations(list: Collection<T>, n: Int): List<List<T>> {
     val result = mutableListOf<List<T>>()
 
     fun go(n: Int, indexes: IntArray, start: Int, index: Int) {
-        for (i in start..(m-1)) {
+        for (i in start..(m - 1)) {
             indexes[index] = i
             //         println("indexes: ${indexes.toList()}, start: ${start}, index: ${index}")
             val newIndex = index + 1
@@ -127,21 +123,19 @@ fun <T> getCombinations(list: Collection<T>, n: Int): List<List<T>> {
                 //           println("added: $pair1")
                 result.add(pair1)
             } else {
-                go(n, indexes, i+1, newIndex)
+                go(n, indexes, i + 1, newIndex)
             }
         }
     }
     for (j in 1..n) {
         go(j, IntArray(j), 0, 0)
-
     }
     return result
-
 }
 
-fun <T: Any> Sequence<T>.zipNextPrevious(startEnd: T? = null, start: T? = null, end: T? = null): Sequence<Triple<T,T,T>> {
-    //TODO: check conditions
-    if ((startEnd != null) && (start!=null) && (end!=null)) throw IllegalArgumentException("either set startEnd or start and/or end")
+fun <T : Any> Sequence<T>.zipNextPrevious(startEnd: T? = null, start: T? = null, end: T? = null): Sequence<Triple<T, T, T>> {
+    // TODO: check conditions
+    if ((startEnd != null) && (start != null) && (end != null)) throw IllegalArgumentException("either set startEnd or start and/or end")
     val e = startEnd ?: end
     val s = startEnd ?: start
     val seq = if (s != null) {
@@ -156,7 +150,6 @@ fun <T: Any> Sequence<T>.zipNextPrevious(startEnd: T? = null, start: T? = null, 
         } else {
             this
         }
-
     }
     return seq.zipWithNext().zipWithNext { a, b -> Triple(a.first, a.second, b.second) }
 }
@@ -170,18 +163,10 @@ fun Long.gcd(vararg others: Long) = others.fold(this) { acc, n -> acc.gcd(n) }
 fun Int.lcm(other: Int) = this / this.gcd(other) * other
 fun Long.lcm(other: Long) = this / this.gcd(other) * other
 
-fun Int.lcm(vararg others:Int) = others.fold(this) { acc, n -> acc.lcm(n) }
-fun Long.lcm(vararg others:Long) = others.fold(this) { acc, n -> acc.lcm(n) }
+fun Int.lcm(vararg others: Int) = others.fold(this) { acc, n -> acc.lcm(n) }
+fun Long.lcm(vararg others: Long) = others.fold(this) { acc, n -> acc.lcm(n) }
 
 operator fun Int.times(c: Char) =
     c.toString().repeat(this)
 
-
-
-
-
-
-
-
-
-
+fun <A> Pair<A, A>.same() = this.first == this.second
