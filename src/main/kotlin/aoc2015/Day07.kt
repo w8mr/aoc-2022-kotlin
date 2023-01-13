@@ -19,53 +19,47 @@ class Day07() {
         fun not(value: UShort): UShort = value.inv()
     }
 
-    sealed interface Opcode {
-        open class OneArgument(val op: (UShort) -> UShort, open val right: Argument) : Opcode
-        data class Load(override val right: Argument) : OneArgument(Day07::load, right)
-        data class Not(override val right: Argument) : OneArgument(Day07::not, right)
-        open class TwoArgument(val op: (UShort, UShort) -> UShort, open val left: Argument, open val right: Argument) : Opcode
-        data class And(override val left: Argument, override val right: Argument) : TwoArgument(UShort::and, left, right)
-        data class Or(override val left: Argument, override val right: Argument) : TwoArgument(UShort::or, left, right)
-        data class LShift(override val left: Argument, override val right: Argument) : TwoArgument(Day07::shiftLeft, left, right)
-        data class RShift(override val left: Argument, override val right: Argument) : TwoArgument(Day07::shiftRight, left, right)
+    sealed interface Expression {
+        data class Literal(val value: UShort) : Expression
+        data class Variable(val name: String) : Expression
+        sealed class Opcode() : Expression {
+            open class OneArgument(val op: (UShort) -> UShort, open val right: Expression) : Opcode()
+            data class Not(override val right: Expression) : OneArgument(Day07::not, right)
+            open class TwoArgument(val op: (UShort, UShort) -> UShort, open val left: Expression, open val right: Expression) : Opcode()
+            data class And(override val left: Expression, override val right: Expression) : TwoArgument(UShort::and, left, right)
+            data class Or(override val left: Expression, override val right: Expression) : TwoArgument(UShort::or, left, right)
+            data class LShift(override val left: Expression, override val right: Expression) : TwoArgument(Day07::shiftLeft, left, right)
+            data class RShift(override val left: Expression, override val right: Expression) : TwoArgument(Day07::shiftRight, left, right)
+        }
     }
 
-    sealed interface Argument {
-        data class Literal(val value: UShort) : Argument
-        data class Wire(val name: String) : Argument
-    }
-
-    val literal = number map { Argument.Literal(it.toUShort()) }
-    val wire = regex("[a-z]+") map(Argument::Wire)
+    val literal = number map { Expression.Literal(it.toUShort()) }
+    val wire = regex("[a-z]+") map(Expression::Variable)
     val argument = literal or wire
-    val load = argument map(Opcode::Load)
-    val not = "NOT " and argument map(Opcode::Not)
-    val andOpcode = seq(argument and " AND ", argument, Opcode::And)
-    val orOpcode = seq(argument and " OR ", argument, Opcode::Or)
-    val lShift = seq(argument and " LSHIFT ", argument, Opcode::LShift)
-    val rShift = seq(argument and " RSHIFT ", argument, Opcode::RShift)
-    val opcode = oneOf(andOpcode, orOpcode, lShift, rShift, not, load)
-    val instruction = seq(opcode and " -> ", wire and eol)
-    val parser = oneOrMore(instruction)
+    val not = "NOT " and argument map(Expression.Opcode::Not)
+    val andOpcode = seq(argument and " AND ", argument, Expression.Opcode::And)
+    val orOpcode = seq(argument and " OR ", argument, Expression.Opcode::Or)
+    val lShift = seq(argument and " LSHIFT ", argument, Expression.Opcode::LShift)
+    val rShift = seq(argument and " RSHIFT ", argument, Expression.Opcode::RShift)
+    val opcode = oneOf(andOpcode, orOpcode, lShift, rShift, not)
+    val expression = opcode or argument
+    val load = seq(expression and " -> ", wire and eol)
+    val parser = oneOrMore(load)
 
-    fun solve(parsed: List<Pair<Opcode, Argument.Wire>>, wire: String): Int {
-        val wires = mutableMapOf<Argument.Wire, UShort>()
+    fun solve(parsed: List<Pair<Expression, Expression.Variable>>, wire: String): Int {
+        val wires = mutableMapOf<Expression.Variable, UShort>()
         val queue = LinkedList(parsed)
 
-        fun hasValue(argument: Argument) =
-            when (argument) {
-                is Argument.Literal -> argument.value
-                is Argument.Wire -> wires[argument]
-            }
-
-        fun run(opcode: Opcode) =
+        fun runExpression(opcode: Expression): UShort? =
             when (opcode) {
-                is Opcode.OneArgument -> hasValue(opcode.right)?.let { right ->
+                is Expression.Literal -> opcode.value
+                is Expression.Variable -> wires[opcode]
+                is Expression.Opcode.OneArgument -> runExpression(opcode.right)?.let { right ->
                     opcode.op(right)
                 }
 
-                is Opcode.TwoArgument -> hasValue(opcode.left)?.let { left ->
-                    hasValue(opcode.right)?.let { right ->
+                is Expression.Opcode.TwoArgument -> runExpression(opcode.left)?.let { left ->
+                    runExpression(opcode.right)?.let { right ->
                         opcode.op(left, right)
                     }
                 }
@@ -74,7 +68,7 @@ class Day07() {
         while (queue.isNotEmpty()) {
             val pair = queue.remove()
             val (opcode, wireTo) = pair
-            val result = run(opcode)
+            val result = runExpression(opcode)
             when (result) {
                 null -> {
                     queue.add(pair)
@@ -85,7 +79,7 @@ class Day07() {
                 }
             }
         }
-        return wires[Argument.Wire(wire)]?.toInt() ?: 0
+        return wires[Expression.Variable(wire)]?.toInt() ?: 0
     }
 
     fun part1(input: String): Int {
@@ -98,7 +92,7 @@ class Day07() {
         val parsed = parser(input)
 
         val a = solve(parsed, "a")
-        val changed = parsed.map { if (it.second.name == "b") (Opcode.Load(Argument.Literal(a.toUShort()))) to it.second else it }
+        val changed = parsed.map { if (it.second.name == "b") (Expression.Literal(a.toUShort())) to it.second else it }
 
         return solve(changed, "a")
     }
